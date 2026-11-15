@@ -20,6 +20,16 @@ function doPost(e) {
   let req;
   try { req = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (err) { return json_({ ok: false, err: 'bad-json' }); }
   if (!req.key || req.key !== SYNC_KEY) return json_({ ok: false, err: 'key' });
+  // {fn:'translate', to:'en'|'ar', texts:[…]} → the user's own text translated by Google (source language detected)
+  if (req.fn === 'translate') {
+    const to = req.to === 'ar' ? 'ar' : 'en';
+    const out = (req.texts || []).slice(0, 100).map(function (t) {
+      t = String(t == null ? '' : t);
+      if (!t.trim()) return t;
+      try { return LanguageApp.translate(t, '', to); } catch (err) { return t; }
+    });
+    return json_({ ok: true, out: out });
+  }
   const lock = LockService.getScriptLock();
   lock.waitLock(25000);
   try {

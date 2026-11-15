@@ -7,6 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>try { if (localStorage.getItem('focus.mode') === 'light') document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]').content = 'default'; } catch (e) {}</script>
 <meta name="apple-mobile-web-app-title" content="Focus">
 <meta name="description" content="مهام ومشاريع وعادات وملاحظات مع تايمر بومودورو">
 <link rel="manifest" href="manifest.webmanifest">
@@ -22,7 +23,7 @@
   --bg: #F0F1F1; --surface: #FFFFFF; --surface-2: #F6F6F6; --ink: #141414; --muted: #6A6A6E; --line: #E2E2E3;
   --red: #EE2E24; --red-ink: #C61F16; --red-soft: #FDEAE8;
   --ok: #1D7F47; --ok-soft: #E3F2E9; --warn: #9A5B00; --warn-soft: #FFF0D6;
-  --bar: #141414; --bar-ink: #FFFFFF; --bar-muted: #9A9A9E; --bar-2: #222222; --shade: rgba(20,20,20,.45);
+  --bar: #FFFFFF; --bar-ink: #141414; --bar-muted: #6A6A6E; --bar-2: #F2F2F3; --bar-line: #E2E2E3; --shade: rgba(20,20,20,.45);
   --nc-red: #FDE3E0; --nc-amber: #FFF0D2; --nc-green: #E1F2E7; --nc-blue: #E3ECFB; --nc-purple: #EDE6FB; --nc-gray: #E9E9EA;
   --f-ui: "Montserrat", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --f-ar: "IBM Plex Sans Arabic", "Montserrat", system-ui, sans-serif;
@@ -34,14 +35,14 @@
   --bg: #0E0E0E; --surface: #1A1A1A; --surface-2: #222222; --ink: #F1F1F1; --muted: #9D9DA1; --line: #2D2D2E;
   --red: #F0453B; --red-ink: #FF7A71; --red-soft: #3A1614;
   --ok: #55C985; --ok-soft: #142D1E; --warn: #F2AE48; --warn-soft: #33240C;
-  --bar: #000000; --bar-ink: #FFFFFF; --bar-muted: #8A8A8E; --bar-2: #1C1C1C; --shade: rgba(0,0,0,.6); color-scheme: dark;
+  --bar: #000000; --bar-ink: #FFFFFF; --bar-muted: #8A8A8E; --bar-2: #1C1C1C; --bar-line: #333; --shade: rgba(0,0,0,.6); color-scheme: dark;
   --nc-red: #3A1A17; --nc-amber: #34280F; --nc-green: #15301F; --nc-blue: #172439; --nc-purple: #251D38; --nc-gray: #2A2A2B;
 } }
 :root[data-theme="dark"] {
   --bg: #0E0E0E; --surface: #1A1A1A; --surface-2: #222222; --ink: #F1F1F1; --muted: #9D9DA1; --line: #2D2D2E;
   --red: #F0453B; --red-ink: #FF7A71; --red-soft: #3A1614;
   --ok: #55C985; --ok-soft: #142D1E; --warn: #F2AE48; --warn-soft: #33240C;
-  --bar: #000000; --bar-ink: #FFFFFF; --bar-muted: #8A8A8E; --bar-2: #1C1C1C; --shade: rgba(0,0,0,.6); color-scheme: dark;
+  --bar: #000000; --bar-ink: #FFFFFF; --bar-muted: #8A8A8E; --bar-2: #1C1C1C; --bar-line: #333; --shade: rgba(0,0,0,.6); color-scheme: dark;
   --nc-red: #3A1A17; --nc-amber: #34280F; --nc-green: #15301F; --nc-blue: #172439; --nc-purple: #251D38; --nc-gray: #2A2A2B;
 }
 * { box-sizing: border-box; }
@@ -62,6 +63,8 @@ svg { flex: none; }
 .brand { display: flex; align-items: center; gap: 9px; font-family: var(--f-ui); font-weight: 800; font-size: 19px; letter-spacing: .02em; direction: ltr; }
 .brand img { width: 30px; height: 30px; border-radius: 8px; display: block; }
 .brand small { font-weight: 600; font-size: 10px; letter-spacing: .2em; color: var(--bar-muted); display: block; margin-top: -3px; }
+.mk { display: block; width: 30px; height: 30px; background: var(--red); -webkit-mask: url(icons/mark.png) center / contain no-repeat; mask: url(icons/mark.png) center / contain no-repeat; }
+.mk.big { width: 64px; height: 64px; }
 .top .sp { flex: 1; }
 .tb { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--bar-line, #333); background: var(--bar-2); color: var(--bar-ink); display: grid; place-items: center; padding: 0; }
 .tb[aria-current="page"] { background: var(--red); border-color: var(--red); }
@@ -176,7 +179,7 @@ h3 { font-size: 14.5px; font-weight: 700; }
 .pcard .pdot, .phead .pdot { width: 12px; height: 12px; }
 .bar { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
 .bar i { display: block; height: 100%; border-radius: 99px; background: var(--red); }
-.stagebar { display: flex; gap: 3px; direction: rtl; }
+.stagebar { display: flex; gap: 3px; }
 .stagebar i { flex: 1; height: 5px; border-radius: 99px; background: var(--surface-2); }
 .stagebar i.on { background: var(--ink); }
 .stagebar i.cur { background: var(--red); }
@@ -227,14 +230,14 @@ h3 { font-size: 14.5px; font-weight: 700; }
 
 /* mini player + floating add button (phone / tablet) */
 .mini { position: fixed; z-index: 29; left: 50%; transform: translateX(-50%); width: min(728px, calc(100% - 20px)); bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-  background: var(--panel, var(--bar)); color: #fff; border-radius: var(--r-m); padding: 8px 8px 8px 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; }
+  background: var(--panel, var(--bar)); color: var(--bar-ink); border: 1px solid var(--bar-line, #333); border-radius: var(--r-m); padding: 8px 8px 8px 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; }
 .mini svg.ring { width: 40px; height: 40px; }
-.mini .ring .trk { stroke: #333; stroke-width: 14; } .mini .ring .prg { stroke-width: 14; }
-.mini .ring.brk .prg { stroke: #fff; }
+.mini .ring .trk { stroke: var(--bar-2); stroke-width: 14; } .mini .ring .prg { stroke-width: 14; }
+.mini .ring.brk .prg { stroke: var(--bar-ink); }
 .mini .time { font-family: var(--f-ui); font-weight: 700; font-size: 19px; direction: ltr; text-align: end; }
 .mini .tt { font-size: 12px; color: var(--bar-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mini .cb { width: 42px; height: 42px; background: var(--red); border: 0; color: #fff; }
-.fab { position: fixed; z-index: 31; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(88px + env(safe-area-inset-bottom, 0px)); width: 58px; height: 58px; border-radius: 18px; background: var(--red); color: #fff; border: 0; display: grid; place-items: center; box-shadow: 0 8px 20px var(--glow); padding: 0; }
+.fab { position: fixed; z-index: 31; inset-inline-end: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(88px + env(safe-area-inset-bottom, 0px)); width: 58px; height: 58px; border-radius: 18px; background: var(--red); color: #fff; border: 0; display: grid; place-items: center; box-shadow: 0 8px 20px var(--glow); padding: 0; }
 .fab .i { width: 26px; height: 26px; }
 body.has-mini .fab { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 
@@ -393,16 +396,16 @@ textarea.inp { resize: vertical; line-height: 1.7; }
 /* widget (floating window, ?widget=1 and picture-in-picture) */
 .widget-body { background: var(--bg); }
 .wg { padding: 12px; display: grid; gap: 10px; }
-.wg-top { background: var(--panel, var(--bar)); color: #fff; border-radius: var(--r-m); padding: 12px; display: flex; align-items: center; gap: 12px; border-bottom: 3px solid var(--red); }
+.wg-top { background: var(--panel, var(--bar)); color: var(--bar-ink); border: 1px solid var(--bar-line, #333); border-radius: var(--r-m); padding: 12px; display: flex; align-items: center; gap: 12px; border-bottom: 3px solid var(--red); }
 .wg-top .ring-wrap { width: 78px; flex: none; }
-.wg-top .ring .trk { stroke: #333; stroke-width: 12; } .wg-top .ring .prg { stroke-width: 12; }
-.wg-top .ring.brk .prg { stroke: #fff; }
+.wg-top .ring .trk { stroke: var(--bar-2); stroke-width: 12; } .wg-top .ring .prg { stroke-width: 12; }
+.wg-top .ring.brk .prg { stroke: var(--bar-ink); }
 .wg-top .time { font-family: var(--f-ui); font-weight: 700; font-size: 30px; direction: ltr; text-align: end; line-height: 1.1; }
 .wg-top .ph { font-size: 12px; color: var(--bar-muted); }
-.wg-top .tt { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }
+.wg-top .tt { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--bar-ink); }
 .wg-btns { display: flex; gap: 6px; margin-top: 6px; }
-.wg-btns button { height: 32px; min-width: 32px; border-radius: 99px; border: 1px solid #333; background: var(--bar-2); color: #fff; display: grid; place-items: center; font-family: var(--f-ui); font-size: 12px; font-weight: 700; padding: 0 9px; }
-.wg-btns button.main { background: var(--red); border-color: var(--red); }
+.wg-btns button { height: 32px; min-width: 32px; border-radius: 99px; border: 1px solid var(--bar-line, #333); background: var(--bar-2); color: var(--bar-ink); display: grid; place-items: center; font-family: var(--f-ui); font-size: 12px; font-weight: 700; padding: 0 9px; }
+.wg-btns button.main { background: var(--red); border-color: var(--red); color: #fff; }
 .wg-btns .i { width: 15px; height: 15px; }
 .wg .task { min-height: 46px; padding: 2px 6px; }
 .wg .task .t { font-size: 13.5px; }
@@ -412,6 +415,12 @@ textarea.inp { resize: vertical; line-height: 1.7; }
 .wg .quick button { width: 32px; height: 32px; }
 .wg .more { text-align: center; font-size: 12px; color: var(--muted); }
 
+/* English (left-to-right) layout */
+html[dir="ltr"] .rail button.nv[aria-current="page"] { box-shadow: inset 3px 0 0 var(--red); }
+html[dir="ltr"] .sw-t::after { right: auto; left: 3px; transition: left .15s; }
+html[dir="ltr"] .sw-t[aria-pressed="true"]::after { left: 21px; }
+/* the user's own text keeps its own direction (Arabic stays right-to-left inside the English app and vice versa) */
+.task .t, .note-c h4, .note-c .b, .note-c .li span, .pcard b, .habit .hh b, .phead h1, .pickrow b, .tpick b, .mini .tt, .wg-top .tt, .srow .grow, .hpill { unicode-bidi: plaintext; }
 /* first-run setup & theme pickers */
 .tpl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .tpl button { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-m); padding: 12px; text-align: start; display: grid; gap: 3px; align-content: start; }
@@ -450,7 +459,7 @@ textarea.inp { resize: vertical; line-height: 1.7; }
 </head>
 <body>
 <header class="top" id="top">
-  <div class="brand"><img src="icons/favicon-64.png" alt=""><div>FOCUS<small id="brandSub">GRAFICOO</small></div></div>
+  <div class="brand"><img src="icons/favicon-64.png" alt="" id="brandImg"><span class="mk" id="brandMk" hidden aria-hidden="true"></span><div>FOCUS<small id="brandSub">GRAFICOO</small></div></div>
   <div class="sp"></div>
   <button class="sync-dot" id="syncDot" data-act="settings" data-s="off" hidden><i></i><span></span></button>
   <button class="tb" data-act="nav" data-v="stats" id="statsBtn" aria-label="الإحصائيات" title="الإحصائيات"></button>
@@ -473,6 +482,11 @@ textarea.inp { resize: vertical; line-height: 1.7; }
 'use strict';
 /* Edition: the personal build (Graficoo link, Graficoo colours) or the public build (tools/build_public.py sets window.FOCUS_CFG). */
 const CFG = Object.assign({ edition: 'personal', storageKey: 'focus.v1', graficoo: true, themes: false, onboarding: false, brandSub: 'GRAFICOO' }, window.FOCUS_CFG || {});
+/* Language: the app's own text switches Arabic/English; what the user types is never translated unless they ask. */
+const LANG = (() => { try { const j = JSON.parse(localStorage.getItem(CFG.storageKey)); return (j && j.pref && j.pref.lang) || 'ar'; } catch (e) { return 'ar'; } })();
+/*i18n-skip*/const EN = {"الأحد": "Sunday", "الاتنين": "Monday", "التلات": "Tuesday", "الأربع": "Wednesday", "الخميس": "Thursday", "الجمعة": "Friday", "السبت": "Saturday", "حد": "Sun", "اتنين": "Mon", "تلات": "Tue", "أربع": "Wed", "خميس": "Thu", "جمعة": "Fri", "سبت": "Sat", "يناير": "January", "فبراير": "February", "مارس": "March", "أبريل": "April", "مايو": "May", "يونيو": "June", "يوليو": "July", "أغسطس": "August", "سبتمبر": "September", "أكتوبر": "October", "نوفمبر": "November", "ديسمبر": "December", "مفيش": "None", "كل يوم": "Every day", "كل أسبوع": "Every week", "كل شهر": "Every month", "أيام محددة": "Specific days", "الشغل": "Work", "الحياة اليومية": "Daily life", "شغل تاني": "Other work", "تخطيط": "Planning", "تنفيذ": "Doing", "مراجعة": "Review", "تسليم": "Delivery", "هبدأ": "To start", "شغال": "In progress", "خلص": "Done", "عرض سعر": "Quotation", "تم الاتفاق": "Agreed", "تصميم": "Design", "موافقة العميل": "Client approval", "طباعة / تنفيذ": "Printing / production", "جاهز للتسليم": "Ready for delivery", "تم التسليم": "Delivered", "النهارده": "Today", "بكرة": "Tomorrow", "امبارح": "Yesterday", "، ": ", ", "دقيقة": "min", "ساعة": "h", "ص": "AM", "م": "PM", "البيت والحياة": "Home & life", "جرّب تايمر 25 دقيقة على مهمة": "Try a 25-minute timer on a task", "رتّب مهام الأسبوع": "Plan the week", "الشغل المتأخر": "Overdue work", "مواعيد التسليم": "Delivery dates", "رياضة نص ساعة": "Half an hour of exercise", "مية — 8 كوبايات": "Water — 8 glasses", "أفكار": "Ideas", "أي فكرة بتيجي في بالك وانت مركز، اكتبها هنا وكمّل شغلك.": "Any idea that pops into your head while you focus — write it here and keep working.", "ملغي": "Cancelled", "عاش!": "Nice!", "أيام ورا بعض": "days in a row", "عاش! ✓": "Nice! ✓", "تايمر": "Timer", "وقت التركيز": "Focus time", "راحة قصيرة": "Short break", "راحة طويلة": "Long break", "زودت": "Added", "بدأ التركيز": "Focusing on", "التايمر خلص ⏰": "Time's up ⏰", "خلصت جلسة التركيز 👏": "Focus session done 👏", "الراحة خلصت — يلا نرجع": "Break is over — back to it", "خد": "Take a", "دقايق راحة": "min break", "مش متزامن": "Not synced", "بيزامن…": "Syncing…", "متزامن": "Synced", "اتزامن ✓": "Synced ✓", "كلمة السر غلط": "Wrong password", "مقدرتش أزامن — اتأكد من النت والرابط": "Couldn't sync — check your internet and the link", "مفيش اتصال بالنت": "No internet connection", "مشكلة في سيرفر جرافيكوو": "Graficoo server problem", "اتحدّث من جرافيكوو": "Updated from Graficoo", "مشاريع جرافيكوو محدّثة ✓": "Graficoo projects are up to date ✓", "جلسة جرافيكوو خلصت — اربط تاني من الإعدادات": "Graficoo session expired — link it again in Settings", "اربط جرافيكوو من الإعدادات الأول": "Link Graficoo in Settings first", "تنقل «": "Move «", "» لمرحلة «": "» to stage «", "»؟": "»?", "هتتحدث في ابلكيشن جرافيكوو كمان.": "It will also update in the Graficoo app.", "بيحدّث جرافيكوو…": "Updating Graficoo…", "المشروع مش موجود في جرافيكوو": "Project not found in Graficoo", "المرحلة اتغيّرت من جرافيكوو — اتحدّثت عندك": "The stage was changed in Graficoo — updated here", "اتنقل لـ «": "Moved to «", "» (من": "» (from", "جلسة جرافيكوو خلصت — اربط تاني": "Graficoo session expired — link it again", "لحظة…": "One moment…", "رجّعها": "Undo done", "خلصت": "Done", "المهام الصغيرة": "Subtasks", "ابدأ تركيز على المهمة": "Start focusing on this task", "مهمة جديدة": "New task", "أضف": "Add", "صباح الخير": "Good morning", "يومك سعيد": "Have a good day", "مساء الخير": "Good evening", "يا": ",", "عادات النهارده": "Today's habits", "كل العادات": "All habits", "تسليمات جرافيكوو": "Graficoo deliveries", "متأخر · ": "Late · ", "الجاي": "Upcoming", "من غير مشروع": "No project", "الكل": "All", "اللي خلص": "Done", "قدامك": "You have", "مهمة": "tasks", "مهام": "tasks", "فيه متأخر)": "some overdue)", "مفيش مهام النهارده — ضيف واحدة وابدأ": "Nothing for today — add one and start", "تركيز": "focus", "مهام خلصت": "tasks done", "يوم ورا بعض": "days in a row", "أضف مهمة للنهارده…": "Add a task for today…", "متأخرة": "Overdue", "يومك فاضي": "Your day is free", "اكتب أول مهمة فوق، أو شوف «الجاي» و«من غير مشروع».": "Write your first task above, or check «Upcoming» and «No project».", "خلصت النهارده": "Done today", "اخفي": "Hide", "اعرض": "Show", "أضف مهمة لبكرة…": "Add a task for tomorrow…", "مفيش حاجة جاية": "Nothing coming up", "المهام اللي ليها ميعاد بعد النهارده هتظهر هنا.": "Tasks due after today will show up here.", "اكتب أي فكرة أو مهمة…": "Write any idea or task…", "الصندوق فاضي": "Inbox is empty", "المهام اللي من غير مشروع ولا ميعاد بتتجمع هنا.": "Tasks without a project or date collect here.", "أضف مهمة…": "Add a task…", "مفيش مهام مفتوحة": "No open tasks", "كل حاجة خلصت": "Everything is done", "لسه مفيش": "Nothing yet", "المهام اللي بتخلصها بتتجمع هنا.": "Tasks you finish collect here.", "المهام": "Tasks", "المشاريع": "Projects", "مشروع": "Project", "شغل جرافيكوو": "Graficoo work", "حدّث": "Refresh", "اربط": "Link", "مفيش مشاريع مفتوحة في جرافيكوو دلوقتي.": "No open projects in Graficoo right now.", "<b>مشاريع جرافيكوو بتيجي هنا لوحدها</b>اربط حسابك من الإعدادات بالـ PIN بتاع ابلكيشن جرافيكوو.": "<b>Graficoo projects come in by themselves</b>Link your account in Settings with your Graficoo app PIN.", "شغل": "(work)", "شخصي": "(personal)", "اتسلم / مؤرشف": "Delivered / archived", "مؤرشف": "Archived", "من جرافيكوو": "From Graficoo", "افتح جرافيكوو": "Open Graficoo", "العميل": "Client", "التسليم": "Delivery", "المراحل": "Stages", "المرحلة اللي بعدها": "Next stage", "دوس على المرحلة": "Tap a stage", "خطوات «": "Steps «", "المرحلة": "stage", "أضف خطوة للمرحلة دي…": "Add a step to this stage…", "مهام عامة": "General tasks", "لسه مفيش حاجة خلصت": "Nothing done yet", "رجوع": "Back", "إعدادات المشروع": "Project settings", " · مؤرشف": " · Archived", " · اتشال من جرافيكوو": " · Removed from Graficoo", "خطوة مفتوحة": "open steps", "مفتوحة": "Open", "ملاحظات المشروع": "Project notes", "ملاحظة": "Note", "د": "min", "مخصص": "Custom", "التركيز": "Focus", "الراحة": "Break", "المدة": "Length", "بومودورو": "Pomodoro", "تايمر عادي": "Plain timer", "من الأول": "Restart", "ابدأ": "Start", "إنهاء": "Finish", "تخطي": "Skip", "بتشتغل على": "Working on", "مهمة الجلسة": "Session task", "اختار مهمة (اختياري)": "Pick a task (optional)", "شيل المهمة": "Remove task", "افتح الويدجت العائم": "Open the floating widget", "التايمر": "Timer", "العادات": "Habits", "عادة": "Habit", "يوم": "days", "أيام": "days", "الأسبوع ده": "This week", "سجّل النهارده": "Log today", "<span class=\"tag\">مش النهارده</span>": "<span class=\"tag\">Not today</span>", "ابدأ بعادة واحدة صغيرة": "Start with one small habit", "زي «اقرا 10 صفحات» أو «مية 8 كوبايات». علّم عليها كل يوم وشوف السلسلة بتكبر.": "Like «read 10 pages» or «water, 8 glasses». Tick it every day and watch the streak grow.", "متوقفة": "Paused", "متثبتة": "Pinned", "الملاحظات": "Notes", "اكتب ملاحظة…": "Take a note…", "قايمة جديدة": "New list", "قايمة": "List", "دوّر في الملاحظات…": "Search notes…", "<div class=\"eyebrow\">الباقي</div>": "<div class=\"eyebrow\">Others</div>", "مفيش ملاحظة فيها الكلام ده.": "No note matches that.", "<b>مفيش ملاحظات لسه</b>اكتب أفكار، قوايم مشتريات، تفاصيل عميل… أي حاجة.": "<b>No notes yet</b>Ideas, shopping lists, client details… anything.", "الإحصائيات": "Stats", "تركيز النهارده": "focus today", "مهام خلصت في ٧ أيام": "tasks done in 7 days", "التزام بالعادات": "habit consistency", "دقايق التركيز — آخر ٧ أيام": "Focus minutes — last 7 days", "الوقت حسب المشروع": "Time by project", "٧ أيام": "7 days", "<div class=\"sub\">لسه مفيش جلسات تركيز الأسبوع ده.</div>": "<div class=\"sub\">No focus sessions this week yet.</div>", "آخر الجلسات": "Recent sessions", " <span class=\"s\">(اتقطعت)</span>": " <span class=\"s\">(interrupted)</span>", "<div class=\"card empty\">ابدأ أول جلسة تركيز وهتلاقيها هنا.</div>": "<div class=\"card empty\">Start your first focus session and it will show up here.</div>", "جرافيكوو": "Graficoo", "شغّل/وقّف التايمر": "start/pause the timer", "مشروع جديد": "New project", "عادة جديدة": "New habit", "ملاحظة جديدة": "New note", "خطوة جديدة": "New step", "من غير مهمة": "No task", "مهمة للنهارده…": "Task for today…", "و": "and ", "مهام كمان": "more tasks", "<div class=\"card empty\" style=\"padding:14px\">مفيش مهام النهارده 👌</div>": "<div class=\"card empty\" style=\"padding:14px\">No tasks today 👌</div>", "وقّف": "Pause", "أحمر": "Red", "أزرق": "Blue", "أخضر": "Green", "بنفسجي": "Purple", "برتقالي": "Orange", "تركواز": "Teal", "وردي": "Pink", "رمادي": "Grey", "غامق": "Dark", "ملوّن": "Colour", "فاتح": "Light", "اللون الأساسي": "Main colour", "لون من اختيارك": "Your own colour", "الشريط اللي فوق": "Top bar", "بياناتك وشغلك": "You & your work", "اسمك (بيظهر في التحية)": "Your name (shown in the greeting)", "اختياري": "Optional", "اسم قسم الشغل": "Work section name", "اسم القسم الشخصي": "Personal section name", "احفظ": "Save", "ضيف مشاريع من قالب شغل": "Add projects from a work template", "<button data-act=\"undo\">تراجع</button>": "<button data-act=\"undo\">Undo</button>", "عاش! المرة الجاية": "Nice! Next time:", "ومعاها": "plus", "مهام صغيرة": "subtasks", "خلصت ✓": "Done ✓", "كل مهام «": "All subtasks of «", "» خلصت": "» are done", "اقفل": "Close", "لأ — مهمة لوحدها": "No — a standalone task", "عامة": "General", "مهمة صغيرة": "Subtask", "امسح": "Delete", "السبت الجاي": "Next Saturday", "المهمة": "Task", "عاوز تعمل إيه؟": "What do you want to do?", "مهام صغيرة تحتها": "Subtasks under it", "أضف مهمة صغيرة…": "Add a subtask…", "المشروع": "Project", "الميعاد": "Due", "تاريخ": "Date", "الأهمية": "Priority", "عادي": "Normal", "مهم": "Important", "عاجل": "Urgent", "التكرار": "Repeat", "كام بومودورو محتاجة؟ (تقريبًا)": "How many pomodoros? (roughly)", "أقل": "Fewer", "أكتر": "More", "تحت مهمة كبيرة؟": "Under a bigger task?", "ملاحظات": "Notes", "أي تفاصيل…": "Any details…", "اتعمل عليها": "Worked on for", "بومودورو كاملة.": "full pomodoros.", "امسح المهمة": "Delete task", "احفظ وابدأ": "Save & start", "مهمة صغيرة جديدة": "New subtask", "تعديل المهمة": "Edit task", "اكتب اسم المهمة": "Type the task name", "ده مشروع جاي من ابلكيشن جرافيكوو: الاسم والعميل والمرحلة بيتغيروا من هناك. هنا تقدر تغيّر اللون أو تخفيه.": "This project comes from the Graficoo app: its name, client and stage change there. Here you can change its colour or hide it.", "اسم المشروع": "Project name", "مثلاً: موقع شخصي، مذاكرة، تجديد الشقة": "e.g. personal website, studying, flat renovation", "النوع": "Type", "حياة يومية": "Daily life", "المراحل (كل مرحلة في سطر)": "Stages (one per line)", "اللون": "Colour", "لون": "Colour", "اخفي من القوايم": "Hide from lists", "أرشفة المشروع": "Archive project", "يختفي من القوايم ويفضل محفوظ": "Disappears from lists but stays saved", "أرشفة": "Archive", "امسح المشروع": "Delete project", "أضف المشروع": "Add project", "تعديل المشروع": "Edit project", "اكتب اسم المشروع": "Type the project name", "آخر ٤ شهور": "Last 4 months", "أطول سلسلة": "Longest streak", "مجموع": "Total", "العادة": "Habit", "مثلاً: اقرا 10 صفحات، صلاة الفجر، مشي": "e.g. read 10 pages, dawn prayer, a walk", "كام مرة في اليوم؟": "How many times a day?", "الأيام": "Days", "وقّف العادة مؤقتًا": "Pause the habit", "تختفي من النهارده وتفضل محفوظة": "Hidden from today, stays saved", "امسح العادة": "Delete habit", "أضف العادة": "Add habit", "اكتب اسم العادة": "Type the habit name", "عنصر": "item", "عنصر جديد…": "New item…", "اكتب ملاحظتك…": "Write your note…", "العنوان": "Title", "امسح الملاحظة": "Delete note", "خليها نص": "Make it text", "خليها قايمة": "Make it a list", "نص": "Text", "ثبّت فوق": "Pin to top", "تمام": "Done", "هتشتغل على إيه؟": "What will you work on?", "ابحث أو اكتب مهمة جديدة…": "Search or type a new task…", "<div class=\"empty\">مفيش مهام مفتوحة — اكتب واحدة فوق.</div>": "<div class=\"empty\">No open tasks — type one above.</div>", "مدة التركيز": "Focus length", "مدة الراحة": "Break length", "الراحة الطويلة": "Long break", "مدة التايمر": "Timer length", "بالدقايق (من 1 لـ 600)": "In minutes (1 to 600)", "الجهاز ده مش بيدعم الإشعارات": "This device doesn't support notifications", "مقفولة من إعدادات المتصفح": "Blocked in the browser settings", "ابلكيشن جرافيكوو": "Graficoo app", "متربط": "Linked", "مشروع مفتوح": "open projects", "مشاريع جرافيكوو بتنزل في «المشاريع» لوحدها بمراحلها ومواعيد تسليمها، وبتتحدث كل ما تفتح التطبيق.": "Graficoo projects come into «Projects» by themselves with their stages and delivery dates, and refresh every time you open the app.", "آخر تحديث": "Last update", "حدّث دلوقتي": "Refresh now", "افصل": "Disconnect", "ادخل بالـ": "Sign in with the", "بتاع ابلكيشن جرافيكوو، والمشاريع هتنزل هنا لوحدها.": "of the Graficoo app, and the projects come in here by themselves.", "رابط السيرفر (متغيرش غير لو عملت نشر جديد)": "Server link (only change it after a new deployment)", "الشكل": "Appearance", "تلقائي": "Auto", "البومودورو": "Pomodoro", "التركيز (دقيقة)": "Focus (minutes)", "الراحة القصيرة": "Short break", "راحة طويلة كل كام جلسة": "Long break after how many sessions", "ابدأ الراحة لوحدها": "Start breaks automatically", "أول ما التركيز يخلص": "As soon as focus ends", "ابدأ التركيز لوحده": "Start focus automatically", "أول ما الراحة تخلص": "As soon as the break ends", "التنبيهات": "Alerts", "صوت لما التايمر يخلص": "Sound when the timer ends", "اهتزاز": "Vibration", "للموبايل": "On phones", "إشعارات": "Notifications", "لما التايمر يخلص والتطبيق في الخلفية": "When the timer ends while the app is in the background", "خلّي الشاشة منورة": "Keep the screen on", "وقت ما التايمر شغال": "While the timer runs", "جرّب الصوت": "Test the sound", "تشغيل": "Play", "المزامنة بين الموبايل والآيباد والكمبيوتر": "Sync between phone, iPad and computer", "رابط المزامنة": "Sync link", "كلمة السر": "Password", "احفظ وزامن": "Save & sync", "انسخ رابط الربط لجهاز تاني": "Copy the setup link for another device", "آخر مزامنة": "Last sync", "من غير مزامنة كل جهاز بيحفظ بياناته لوحده.": "Without sync, each device keeps its own data.", "نسخة احتياطية": "Backup", "حمّل نسخة": "Download a copy", "رجّع نسخة": "Restore a copy", "التطبيق": "App", "ثبّت": "Install", "على الجهاز": "on this device", "يفتح لوحده زي أي ابلكيشن": "Opens on its own like any app", "الويدجت العائم": "Floating widget", "تايمر صغير فوق كل الشبابيك + مهام وعادات النهارده": "A small timer above every window + today's tasks and habits", "افتح": "Open", "على الآيفون/الآيباد": "On iPhone/iPad", "زرار المشاركة": "Share button", "على أندرويد": "On Android", "على الكمبيوتر: أيقونة التثبيت في شريط العنوان.": "On a computer: the install icon in the address bar.", "الإعدادات": "Settings", "طبيب / صيدلي": "Doctor / pharmacist", "عيادة، متابعة حالات، تعليم طبي": "Clinic, follow-ups, medical learning", "العيادة": "Clinic", "حياتي": "My life", "متابعة الحالات": "Patient follow-ups", "استلام الحالة": "Case intake", "فحوصات": "Tests", "خطة علاج": "Treatment plan", "متابعة": "Follow-up", "مراجعة نتائج التحاليل": "Review lab results", "الرد على استفسارات المرضى": "Answer patients' questions", "إدارة العيادة": "Clinic admin", "مطلوب": "To do", "جاري": "Ongoing", "طلب مستلزمات": "Order supplies", "التعليم الطبي": "Medical learning", "هقرا": "To read", "بقرا": "Reading", "محاضرة أو كورس الأسبوع": "This week's lecture or course", "قراءة طبية 20 دقيقة": "20 min of medical reading", "مشي نص ساعة": "Half an hour walk", "مدرّس": "Teacher", "تحضير، حصص، تصحيح": "Prep, classes, grading", "المدرسة": "School", "تحضير الدروس": "Lesson prep", "تحضير": "Prep", "شرح": "Teaching", "تقييم": "Assessment", "تحضير درس بكرة": "Prepare tomorrow's lesson", "التصحيح والدرجات": "Grading & marks", "استلام": "Collect", "تصحيح": "Grade", "رصد": "Record", "تصحيح الواجب": "Grade the homework", "أولياء الأمور": "Parents", "اتواصلت": "Contacted", "اتحل": "Solved", "قراءة 10 صفحات": "Read 10 pages", "طالب": "Student", "مذاكرة، واجبات، امتحانات": "Study, homework, exams", "الدراسة": "Studies", "مذاكرة المواد": "Studying subjects", "قراءة": "Reading", "تلخيص": "Summarising", "حل": "Practice", "ذاكر أول فصل": "Study the first chapter", "حل تمارين": "Solve exercises", "الواجبات والمشاريع": "Homework & projects", "اتسلم": "Handed in", "واجب الأسبوع": "This week's homework", "الامتحانات": "Exams", "جدول": "Schedule", "مذاكرة": "Studying", "مراجعة نهائية": "Final revision", "مذاكرة ساعتين": "Two hours of study", "نوم بدري": "Sleep early", "مهندس / مبرمج": "Engineer / developer", "مشاريع، مهام، تعلّم": "Projects, tasks, learning", "المشروع الحالي": "Current project", "اختبار": "Testing", "اكتب خطة الأسبوع": "Write this week's plan", "التعلّم": "Learning", "هتعلم": "To learn", "بتعلم": "Learning now", "اتعلمت": "Learned", "كورس أو مقال": "A course or an article", "تعلّم 30 دقيقة": "30 min of learning", "مشي": "A walk", "مصمم / فريلانسر": "Designer / freelancer", "عملاء، بريف، تسليمات": "Clients, briefs, deliveries", "العملاء": "Clients", "مشروع عميل": "Client project", "بريف": "Brief", "تعديلات": "Revisions", "اسأل العميل عن التفاصيل": "Ask the client for details", "البورتفوليو": "Portfolio", "فكرة": "Idea", "نشر": "Publish", "جهّز أحدث شغلك": "Prepare your latest work", "تمرين تصميم 20 دقيقة": "20 min design practice", "بيزنس / مبيعات": "Business / sales", "عملاء، عروض أسعار، متابعة": "Clients, quotes, follow-up", "البيزنس": "Business", "عميل جديد": "New client", "تفاوض": "Negotiation", "اتقفل": "Closed", "تابع مع عميل": "Follow up with a client", "التسويق": "Marketing", "بوست الأسبوع": "This week's post", "الحسابات": "Accounts", "اتعمل": "Done", "راجع المصاريف": "Review expenses", "مراجعة أرقام اليوم": "Review today's numbers", "محامي": "Lawyer", "قضايا، جلسات، استشارات": "Cases, hearings, consultations", "المكتب": "Office", "القضايا": "Cases", "جلسة": "Hearing", "حكم": "Verdict", "جهّز مستندات الجلسة": "Prepare the hearing documents", "الاستشارات": "Consultations", "جديدة": "New", "بدرسها": "Studying it", "اترد": "Answered", "قراءة قانونية 20 دقيقة": "20 min of legal reading", "البيت والعيلة": "Home & family", "مشتريات، مواعيد، ولاد": "Shopping, appointments, kids", "البيت": "Home", "أنا": "Me", "بنعمل": "Doing", "قايمة المشتريات": "Shopping list", "الولاد": "Kids", "مواعيد المدرسة": "School appointments", "وقت لنفسي 20 دقيقة": "20 min for myself", "من غير قالب": "No template", "ابدأ فاضي وظبّط بنفسك": "Start empty and set it up yourself", "أهلاً بيك 👋": "Welcome 👋", "دي الملاحظات — اكتب أي فكرة تيجي في بالك وانت مركز وكمّل شغلك.\nتقدر تغيّر الألوان واسم الأقسام والقوالب من ⚙️ الإعدادات.": "These are your notes — jot down anything that pops into your head while you focus, and keep working.\nYou can change the colours, section names and templates in ⚙️ Settings.", "اختار نوع شغل ونضيفلك مشاريعه بمراحلها وكام مهمة تبدأ بيها. مشاريعك الحالية مش هتتلمس.": "Pick a type of work and we add its projects with their stages and a few tasks to start. Your current projects stay untouched.", "أهلاً بيك في": "Welcome to", "مهامك ومشاريعك وعاداتك وتايمر للتركيز — في مكان واحد.": "Your tasks, projects, habits and a focus timer — in one place.", "ظبّطه على شغلك في ثواني، وتقدر تغيّر كل حاجة بعدين.": "Set it up for your work in seconds; you can change everything later.", "اسمك (اختياري)": "Your name (optional)", "بيظهر في التحية": "Shown in the greeting", "شغلك إيه؟": "What do you do?", "اختار لونك": "Pick your colour", "ضيف المشاريع": "Add the projects", "تخطّي": "Skip", "يلا نبدأ": "Let's start", "قوالب الشغل": "Work templates", "ظبّط Focus": "Set up Focus", "اختار نوع شغل": "Pick a type of work", "اتضافت المشاريع ✓": "Projects added ✓", "أهلاً يا": "Welcome,", "يلا نبدأ 👋": "Let's start 👋", "المتصفح منع الشباك الصغير — اسمح بالـ popups": "The browser blocked the small window — allow pop-ups", "التايمر العائم مش مدعوم على الجهاز ده": "The floating timer isn't supported on this device", " · متوقف": " · paused", "رجّعت": "Restored", "الملف ده مش نسخة Focus": "This file isn't a Focus backup", "تفصل جرافيكوو من الجهاز ده؟ المشاريع اللي نزلت هتفضل موجودة.": "Disconnect Graficoo on this device? Projects already here will stay.", "اتمسحت هي و": "Deleted with ", "اتمسحت": "Deleted", "هتمسح «": "Delete «", "مهمة فيه": "tasks in it", "؟": "?", "المشروع اتمسح": "Project deleted", "تمسح «": "Delete «", "» وكل أيامها؟": "» and all its days?", "العادة اتمسحت": "Habit deleted", "الملاحظة اتمسحت": "Note deleted", "الإشعارات شغالة ✓": "Notifications are on ✓", "هنبلغك لما التايمر يخلص": "We'll tell you when the timer ends", "اتنسخ — افتحه على الجهاز التاني (فيه كلمة السر، متبعتهوش لحد)": "Copied — open it on the other device (it contains the password, keep it private)", "انسخ الرابط ده وافتحه على الجهاز التاني:": "Copy this link and open it on the other device:", "اتضافت ✓": "Added ✓", "اتحفظ ✓": "Saved ✓", "الرابط لازم يكون رابط Apps Script": "The link must be an Apps Script link", "بيربط جرافيكوو…": "Linking Graficoo…", "هيخلص الساعة": "ends at", "المزامنة اتربطت على الجهاز ده ✓": "Sync is linked on this device ✓", "اللغة": "Language", "بيتغير كلام التطبيق بس — اللي انت كاتبه بيفضل زي ما هو.": "Only the app's own text changes — what you wrote stays as it is.", "افتح الويدجت": "Open the widget", "ويدجت عائم": "Floating widget", "العربية": "العربية", "النهارده ": "today", "الترجمة بتشتغل من خلال المزامنة — اربطها من الإعدادات الأول": "Translation works through sync — link it in Settings first", "الترجمة مش متاحة دلوقتي — جرّب تاني": "Translation isn't available right now — try again", "ترجم للغة التانية": "Translate to the other language", "مفيش كلام أترجمه": "Nothing to translate", "بيترجم…": "Translating…", "اتترجم للإنجليزي — راجعه واحفظ": "Translated to English — check it and save", "اتترجم للعربي — راجعه واحفظ": "Translated to Arabic — check it and save", "كل اللي كتبته إنجليزي أصلاً": "Everything you wrote is already in English", "كل اللي كتبته عربي أصلاً": "Everything you wrote is already in Arabic", "هترجم": "This translates", "حاجة كتبتها": "things you wrote", "للإنجليزي": "to English", "للعربي": "to Arabic", "تقدر ترجع زي ما كانت من «تراجع».": "You can put them back with «Undo».", "بيترجم": "Translating", "اتترجم": "Translated", "رجعت زي ما كانت ✓": "Back as it was ✓", "ترجمة اللي كتبته": "Translate what you wrote", "بيترجم مهامك ومشاريعك وعاداتك وملاحظاتك للغة اللي تختارها، من خلال المزامنة على حساب جوجل بتاعك. وفي كل شاشة تعديل فيه زرار 🌐 يترجم الحاجة دي بس.": "Translates your tasks, projects, habits and notes into the language you pick, through sync on your own Google account. Every edit screen also has a 🌐 button that translates just that item.", "كله للإنجليزي": "All to English", "كله للعربي": "All to Arabic", "رجّع آخر ترجمة": "Undo the last translation"};/*/i18n-skip*/
+const L = (s) => (LANG === 'en' && EN[s] !== undefined ? EN[s] : s);
+document.documentElement.lang = LANG; document.documentElement.dir = LANG === 'en' ? 'ltr' : 'rtl';
 /* ---------- helpers ---------- */
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -483,41 +497,41 @@ const clone = (o) => JSON.parse(JSON.stringify(o));
 const dkey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const parseD = (k) => { const [y, m, d] = String(k).slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d); };
 const addDays = (k, n) => { const d = parseD(k); d.setDate(d.getDate() + n); return dkey(d); };
-const DAYS = ['الأحد', 'الاتنين', 'التلات', 'الأربع', 'الخميس', 'الجمعة', 'السبت'];
-const DAYS_S = ['حد', 'اتنين', 'تلات', 'أربع', 'خميس', 'جمعة', 'سبت'];
-const MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+const DAYS = [L('الأحد'), L('الاتنين'), L('التلات'), L('الأربع'), L('الخميس'), L('الجمعة'), L('السبت')];
+const DAYS_S = [L('حد'), L('اتنين'), L('تلات'), L('أربع'), L('خميس'), L('جمعة'), L('سبت')];
+const MONTHS = [L('يناير'), L('فبراير'), L('مارس'), L('أبريل'), L('مايو'), L('يونيو'), L('يوليو'), L('أغسطس'), L('سبتمبر'), L('أكتوبر'), L('نوفمبر'), L('ديسمبر')];
 const COLORS = ['#EE2E24', '#141414', '#8A8A8E', '#F2AE48', '#1D9A55', '#2F6FDE', '#7B4FD6', '#D9417A'];
 const HCOLORS = ['#EE2E24', '#F2AE48', '#1D9A55', '#2F6FDE', '#7B4FD6', '#D9417A', '#8A8A8E'];
 const NCOLORS = [['', 'var(--surface)'], ['red', 'var(--nc-red)'], ['amber', 'var(--nc-amber)'], ['green', 'var(--nc-green)'], ['blue', 'var(--nc-blue)'], ['purple', 'var(--nc-purple)'], ['gray', 'var(--nc-gray)']];
-const REPS = [['', 'مفيش'], ['daily', 'كل يوم'], ['weekly', 'كل أسبوع'], ['monthly', 'كل شهر'], ['days', 'أيام محددة']];
-const AREAS = { work: 'الشغل', life: 'الحياة اليومية' };
+const REPS = [['', L('مفيش')], ['daily', L('كل يوم')], ['weekly', L('كل أسبوع')], ['monthly', L('كل شهر')], ['days', L('أيام محددة')]];
+const AREAS = { work: L('الشغل'), life: L('الحياة اليومية') };
 const areaName = (a) => ((a === 'work' ? S.pref.areaWork : S.pref.areaLife) || AREAS[a]);
-const workLabel = () => (CFG.graficoo ? 'شغل تاني' : areaName('work'));
-const DEF_STAGES = { work: ['تخطيط', 'تنفيذ', 'مراجعة', 'تسليم'], life: ['هبدأ', 'شغال', 'خلص'] };
+const workLabel = () => (CFG.graficoo ? L('شغل تاني') : areaName('work'));
+const DEF_STAGES = { work: [L('تخطيط'), L('تنفيذ'), L('مراجعة'), L('تسليم')], life: [L('هبدأ'), L('شغال'), L('خلص')] };
 // Same stages as the Graficoo Studio app (Projects tab, column "stage").
-const G_STAGES = [['1 - Quotation', 'عرض سعر'], ['2 - Agreed (Deposit)', 'تم الاتفاق'], ['3 - Design', 'تصميم'], ['4 - Client Approval', 'موافقة العميل'], ['5 - Printing / Production', 'طباعة / تنفيذ'], ['6 - Ready for Delivery', 'جاهز للتسليم'], ['7 - Delivered', 'تم التسليم']];
+const G_STAGES = [['1 - Quotation', L('عرض سعر')], ['2 - Agreed (Deposit)', L('تم الاتفاق')], ['3 - Design', L('تصميم')], ['4 - Client Approval', L('موافقة العميل')], ['5 - Printing / Production', L('طباعة / تنفيذ')], ['6 - Ready for Delivery', L('جاهز للتسليم')], ['7 - Delivered', L('تم التسليم')]];
 const G_DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbxrs5FcX0rcJtJ7oYJWWHvVgvotD7D0tWpgfupsyZE0CssG_mcisxRU6rKK1SojXpc0aQ/exec';
 const G_APP = 'https://ismaeloo04.github.io/graficoo-app/';
 function dueLabel(k) {
   const t = dkey();
-  if (k === t) return 'النهارده';
-  if (k === addDays(t, 1)) return 'بكرة';
-  if (k === addDays(t, -1)) return 'امبارح';
+  if (k === t) return L('النهارده');
+  if (k === addDays(t, 1)) return L('بكرة');
+  if (k === addDays(t, -1)) return L('امبارح');
   const d = parseD(k), diff = Math.round((d - parseD(t)) / 864e5);
   if (diff > 1 && diff < 7) return DAYS[d.getDay()];
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }
 function repLabel(r) {
   if (!r) return '';
-  if (r.startsWith('days:')) return r.slice(5).split(',').filter(Boolean).map((d) => DAYS_S[d]).join('، ');
+  if (r.startsWith('days:')) return r.slice(5).split(',').filter(Boolean).map((d) => DAYS_S[d]).join(L('، '));
   return (REPS.find((x) => x[0] === r) || [, ''])[1];
 }
 function fmt(ms) {
   const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
   return h ? `${h}:${pad(m)}:${pad(s % 60)}` : `${pad(m)}:${pad(s % 60)}`;
 }
-function fmtMin(m) { return m < 60 ? { v: String(m), u: 'دقيقة' } : { v: `${Math.floor(m / 60)}:${pad(m % 60)}`, u: 'ساعة' }; }
-function clock(ts) { const d = new Date(ts); let h = d.getHours(); const ap = h < 12 ? 'ص' : 'م'; h = h % 12 || 12; return `${h}:${pad(d.getMinutes())} ${ap}`; }
+function fmtMin(m) { return m < 60 ? { v: String(m), u: L('دقيقة') } : { v: `${Math.floor(m / 60)}:${pad(m % 60)}`, u: L('ساعة') }; }
+function clock(ts) { const d = new Date(ts); let h = d.getHours(); const ap = h < 12 ? L('ص') : L('م'); h = h % 12 || 12; return `${h}:${pad(d.getMinutes())} ${ap}`; }
 
 /* ---------- icons ---------- */
 const sv = (p) => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
@@ -547,6 +561,7 @@ const I = {
   widget: sv('<rect x="3" y="4" width="18" height="16" rx="2"/><rect x="11" y="11" width="7" height="6" rx="1" fill="currentColor" stroke="none"/>'),
   down: sv('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'),
   up: sv('<path d="M12 15V4M7 9l5-5 5 5M5 20h14"/>'),
+  globe: sv('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.5 5.3 3.5 8.5s-1.1 6.1-3.5 8.5M12 3.5C9.6 5.9 8.5 8.8 8.5 12s1.1 6.1 3.5 8.5"/>'),
   bell: sv('<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 21h4"/>'),
   pin: sv('<path d="M9 3.5h6l-1 5 3.5 3.5v1.5h-11V12L10 8.5z"/><path d="M12 13.5v7"/>'),
   list: sv('<rect x="4" y="4.5" width="5" height="5" rx="1"/><path d="M12 7h8"/><rect x="4" y="14.5" width="5" height="5" rx="1"/><path d="M12 17h8"/>'),
@@ -554,6 +569,7 @@ const I = {
   truck: sv('<path d="M3 6.5h11v9H3zM14 9.5h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17.5" cy="17.5" r="1.8"/>'),
   ext: sv('<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'),
 };
+if (LANG === 'en') { const b = I.back; I.back = I.chev; I.chev = b; } // back points left, forward points right
 
 /* ---------- state ---------- */
 const LS = CFG.storageKey;
@@ -565,15 +581,15 @@ function seed() {
   const t = dkey(), base = { updatedAt: 1, createdAt: 1 };
   const S0 = { projects: {}, tasks: {}, sessions: {}, notes: {}, habits: {}, timer: defaultTimer(), pref: { ...DEF_PREF }, dev: { ...DEF_DEV }, dirty: {} };
   if (CFG.onboarding) return S0; // the setup sheet fills it from a job template
-  S0.projects['seed-p2'] = { id: 'seed-p2', name: 'البيت والحياة', area: 'life', color: '#8A8A8E', stages: DEF_STAGES.life.slice(), stage: 1, ...base };
+  S0.projects['seed-p2'] = { id: 'seed-p2', name: L('البيت والحياة'), area: 'life', color: '#8A8A8E', stages: DEF_STAGES.life.slice(), stage: 1, ...base };
   const mk = (id, title, projectId, extra) => (S0.tasks[id] = { id, title, notes: '', projectId, due: t, prio: 0, repeat: '', est: 0, done: false, ...base, ...extra });
-  mk('seed-t1', 'جرّب تايمر 25 دقيقة على مهمة', null, { prio: 1, est: 1 });
-  mk('seed-t2', 'رتّب مهام الأسبوع', null, {});
-  mk('seed-t2a', 'الشغل المتأخر', null, { parentId: 'seed-t2', due: null });
-  mk('seed-t2b', 'مواعيد التسليم', null, { parentId: 'seed-t2', due: null });
-  S0.habits['seed-h1'] = { id: 'seed-h1', name: 'رياضة نص ساعة', color: '#1D9A55', target: 1, days: [], log: {}, logAt: {}, ...base };
-  S0.habits['seed-h2'] = { id: 'seed-h2', name: 'مية — 8 كوبايات', color: '#2F6FDE', target: 8, days: [], log: {}, logAt: {}, ...base };
-  S0.notes['seed-n1'] = { id: 'seed-n1', title: 'أفكار', body: 'أي فكرة بتيجي في بالك وانت مركز، اكتبها هنا وكمّل شغلك.', kind: 'text', items: [], color: 'amber', pinned: true, ...base };
+  mk('seed-t1', L('جرّب تايمر 25 دقيقة على مهمة'), null, { prio: 1, est: 1 });
+  mk('seed-t2', L('رتّب مهام الأسبوع'), null, {});
+  mk('seed-t2a', L('الشغل المتأخر'), null, { parentId: 'seed-t2', due: null });
+  mk('seed-t2b', L('مواعيد التسليم'), null, { parentId: 'seed-t2', due: null });
+  S0.habits['seed-h1'] = { id: 'seed-h1', name: L('رياضة نص ساعة'), color: '#1D9A55', target: 1, days: [], log: {}, logAt: {}, ...base };
+  S0.habits['seed-h2'] = { id: 'seed-h2', name: L('مية — 8 كوبايات'), color: '#2F6FDE', target: 8, days: [], log: {}, logAt: {}, ...base };
+  S0.notes['seed-n1'] = { id: 'seed-n1', title: L('أفكار'), body: L('أي فكرة بتيجي في بالك وانت مركز، اكتبها هنا وكمّل شغلك.'), kind: 'text', items: [], color: 'amber', pinned: true, ...base };
   return S0;
 }
 function normalize(j) {
@@ -628,7 +644,7 @@ function streak() {
 const isG = (p) => p && p.source === 'graficoo';
 const stagesOf = (p) => isG(p) ? G_STAGES.map((s) => s[1]) : (p.stages && p.stages.length ? p.stages : DEF_STAGES.work);
 const stageIdx = (p) => isG(p) ? G_STAGES.findIndex((s) => s[0] === p.gstage) : Math.min(p.stage || 0, stagesOf(p).length - 1);
-const stageName = (p) => isG(p) && p.gstage === 'Cancelled' ? 'ملغي' : (stagesOf(p)[stageIdx(p)] || '');
+const stageName = (p) => isG(p) && p.gstage === 'Cancelled' ? L('ملغي') : (stagesOf(p)[stageIdx(p)] || '');
 
 /* habits */
 const hc = (h) => h.color || '#EE2E24';
@@ -650,7 +666,7 @@ function logHabit(id, day, mode) {
   if (v) h.log[day] = v; else delete h.log[day];
   h.logAt[day] = now();
   touch('habit', h);
-  if (v >= tg && c < tg && day === dkey()) { const s = hStreak(h); toast(s > 1 ? `عاش! ${s} أيام ورا بعض 🔥` : 'عاش! ✓'); if (S.dev.vibrate && navigator.vibrate) navigator.vibrate(30); }
+  if (v >= tg && c < tg && day === dkey()) { const s = hStreak(h); toast(s > 1 ? `${L("عاش!")} ${s} ${L("أيام ورا بعض")} 🔥` : L('عاش! ✓')); if (S.dev.vibrate && navigator.vibrate) navigator.vibrate(30); }
   render();
 }
 /* habit logs merge per day by the time each day was last changed, so ticks from two devices both survive */
@@ -674,7 +690,7 @@ const VIEWS = ['tasks', 'projects', 'project', 'timer', 'habits', 'notes', 'stat
 
 /* ---------- timer ---------- */
 const T = () => S.timer;
-const phaseName = (t = T()) => t.mode === 'timer' ? 'تايمر' : t.phase === 'focus' ? 'وقت التركيز' : t.phase === 'short' ? 'راحة قصيرة' : 'راحة طويلة';
+const phaseName = (t = T()) => t.mode === 'timer' ? L('تايمر') : t.phase === 'focus' ? L('وقت التركيز') : t.phase === 'short' ? L('راحة قصيرة') : L('راحة طويلة');
 const phaseMin = (ph, t = T()) => ph === 'focus' ? S.pref.focus : ph === 'short' ? S.pref.short : ph === 'long' ? S.pref.long : t.timerMin;
 const remaining = (t = T()) => t.running ? Math.max(0, t.endAt - now()) : t.left;
 const isBreak = (t = T()) => t.phase === 'short' || t.phase === 'long';
@@ -720,7 +736,7 @@ function skipT() {
 function extendT(m) {
   const t = T(), ms = m * 60000;
   t.dur += ms; if (t.running) t.endAt += ms; else t.left += ms;
-  touch('timer', t, true); renderTimerBits(); toast(`زودت ${m} دقيقة`);
+  touch('timer', t, true); renderTimerBits(); toast(`${L("زودت")} ${m} ${L("دقيقة")}`);
 }
 function complete() {
   const t = T();
@@ -746,7 +762,7 @@ function focusTask(id) {
   const t = T();
   if (t.taskId === id && t.running) { pauseT(); return; }
   if (t.taskId !== id) { logPartial(); t.taskId = id; if (t.mode === 'pomo' && t.phase !== 'focus') setPhase('focus'); else if (t.startedAt) setPhase(t.mode === 'timer' ? 'timer' : 'focus'); else touch('timer', t, true); }
-  startT(); const k = S.tasks[id]; if (k) toast(`بدأ التركيز: ${k.title}`);
+  startT(); const k = S.tasks[id]; if (k) toast(`${L("بدأ التركيز")}: ${k.title}`);
 }
 
 /* sound, vibration, notifications, wake lock */
@@ -774,8 +790,8 @@ function notifyDone(was) {
   chime();
   if (S.dev.vibrate && navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
   const task = S.tasks[was.taskId];
-  const title = was.mode === 'timer' ? 'التايمر خلص ⏰' : was.phase === 'focus' ? 'خلصت جلسة التركيز 👏' : 'الراحة خلصت — يلا نرجع';
-  const body = was.mode === 'pomo' && was.phase === 'focus' ? `خد ${phaseMin(T().phase)} دقايق راحة${task ? ' · ' + task.title : ''}` : (task ? task.title : 'Focus');
+  const title = was.mode === 'timer' ? L('التايمر خلص ⏰') : was.phase === 'focus' ? L('خلصت جلسة التركيز 👏') : L('الراحة خلصت — يلا نرجع');
+  const body = was.mode === 'pomo' && was.phase === 'focus' ? `${L("خد")} ${phaseMin(T().phase)} ${L("دقايق راحة")}${task ? ' · ' + task.title : ''}` : (task ? task.title : 'Focus');
   if (document.hidden) notify(title, body, 'focus-done'); else toast(title);
   closeRunNote();
 }
@@ -795,7 +811,7 @@ function scheduleSync(ms = 1500) { if (!S.dev.syncUrl) return; clearTimeout(sync
 function setSyncState(s) {
   const el = $('#syncDot'); if (!el) return;
   el.hidden = !S.dev.syncUrl; el.dataset.s = s;
-  el.querySelector('span').textContent = s === 'err' ? 'مش متزامن' : s === 'busy' ? 'بيزامن…' : 'متزامن';
+  el.querySelector('span').textContent = s === 'err' ? L('مش متزامن') : s === 'busy' ? L('بيزامن…') : L('متزامن');
 }
 async function syncNow(manual) {
   if (!S.dev.syncUrl || syncing) return;
@@ -821,9 +837,9 @@ async function syncNow(manual) {
     }
     S.dev.since = j.now; S.dev.lastSync = now(); save(); setSyncState('ok');
     if (changed) render();
-    if (manual) toast('اتزامن ✓');
+    if (manual) toast(L('اتزامن ✓'));
     if (Object.keys(S.dirty).length) scheduleSync(800);
-  } catch (e) { setSyncState('err'); if (manual) toast(e.message === 'key' ? 'كلمة السر غلط' : 'مقدرتش أزامن — اتأكد من النت والرابط'); }
+  } catch (e) { setSyncState('err'); if (manual) toast(e.message === 'key' ? L('كلمة السر غلط') : L('مقدرتش أزامن — اتأكد من النت والرابط')); }
   finally { syncing = false; }
 }
 
@@ -832,9 +848,9 @@ let gBusy = false;
 async function gRpc(fn, args) {
   let r;
   try { r = await fetch(S.dev.gUrl || G_DEFAULT_URL, { method: 'POST', body: JSON.stringify({ fn, args }), redirect: 'follow', credentials: 'omit' }); }
-  catch (e) { throw new Error('مفيش اتصال بالنت'); }
+  catch (e) { throw new Error(L('مفيش اتصال بالنت')); }
   const j = await r.json();
-  if (!j || !j.ok) throw new Error((j && j.error) || 'مشكلة في سيرفر جرافيكوو');
+  if (!j || !j.ok) throw new Error((j && j.error) || L('مشكلة في سيرفر جرافيكوو'));
   return j.data;
 }
 async function gLogin(pin) {
@@ -864,9 +880,9 @@ async function gRefresh(manual) {
     const d = await gRpc('refreshData', [S.dev.gToken]);
     const n = applyGraficoo(d.projects || []);
     S.dev.gLast = now(); save(); render();
-    if (manual) toast(n ? `اتحدّث من جرافيكوو (${n})` : 'مشاريع جرافيكوو محدّثة ✓');
+    if (manual) toast(n ? `${L("اتحدّث من جرافيكوو")} (${n})` : L('مشاريع جرافيكوو محدّثة ✓'));
   } catch (e) {
-    if (/AUTH/.test(e.message)) { S.dev.gToken = ''; save(); toast('جلسة جرافيكوو خلصت — اربط تاني من الإعدادات'); render(); }
+    if (/AUTH/.test(e.message)) { S.dev.gToken = ''; save(); toast(L('جلسة جرافيكوو خلصت — اربط تاني من الإعدادات')); render(); }
     else if (manual) toast(e.message);
   } finally { gBusy = false; }
 }
@@ -874,21 +890,21 @@ async function gAdvance(pid) {
   const p = S.projects[pid]; if (!isG(p)) return;
   const i = G_STAGES.findIndex((s) => s[0] === p.gstage);
   if (i < 0 || i >= G_STAGES.length - 1) return;
-  if (!S.dev.gToken) { toast('اربط جرافيكوو من الإعدادات الأول'); return; }
+  if (!S.dev.gToken) { toast(L('اربط جرافيكوو من الإعدادات الأول')); return; }
   const nx = G_STAGES[i + 1];
-  if (!confirm(`تنقل «${p.name}» لمرحلة «${nx[1]}»؟\nهتتحدث في ابلكيشن جرافيكوو كمان.`)) return;
-  busy(true, 'بيحدّث جرافيكوو…');
+  if (!confirm(`${L("تنقل «")}${p.name}${L("» لمرحلة «")}${nx[1]}${L("»؟")}\n${L("هتتحدث في ابلكيشن جرافيكوو كمان.")}`)) return;
+  busy(true, L('بيحدّث جرافيكوو…'));
   try {
     const d = await gRpc('refreshData', [S.dev.gToken]);
     const gp = (d.projects || []).find((x) => String(x.id) === p.gid);
-    if (!gp) throw new Error('المشروع مش موجود في جرافيكوو');
-    if (gp.stage !== p.gstage) { applyGraficoo(d.projects); render(); toast('المرحلة اتغيّرت من جرافيكوو — اتحدّثت عندك'); return; }
+    if (!gp) throw new Error(L('المشروع مش موجود في جرافيكوو'));
+    if (gp.stage !== p.gstage) { applyGraficoo(d.projects); render(); toast(L('المرحلة اتغيّرت من جرافيكوو — اتحدّثت عندك')); return; }
     const o = { ...gp, stage: nx[0] }; delete o.snap; delete o._local; o.quick = gp.quick ? 'yes' : '';
-    await gRpc('saveProject', [S.dev.gToken, o, { log: `اتنقل لـ «${nx[1]}» (من Focus)` }]);
+    await gRpc('saveProject', [S.dev.gToken, o, { log: `${L("اتنقل لـ «")}${nx[1]}${L("» (من")} Focus)` }]);
     p.gstage = nx[0]; p.closed = nx[0] === '7 - Delivered'; touch('project', p); render();
     toast(`${p.gid} ← ${nx[1]}`);
   } catch (e) {
-    if (/AUTH/.test(e.message)) { S.dev.gToken = ''; save(); toast('جلسة جرافيكوو خلصت — اربط تاني'); } else toast(e.message);
+    if (/AUTH/.test(e.message)) { S.dev.gToken = ''; save(); toast(L('جلسة جرافيكوو خلصت — اربط تاني')); } else toast(e.message);
   } finally { busy(false); }
 }
 let busyN = 0;
@@ -896,7 +912,7 @@ function busy(on, msg) {
   busyN = Math.max(0, busyN + (on ? 1 : -1));
   let b = document.getElementById('busy');
   if (busyN && !b) { b = document.createElement('div'); b.id = 'busy'; b.className = 'busy'; document.body.appendChild(b); }
-  if (b) { if (busyN) b.innerHTML = `<div><span class="spin"></span><span>${esc(msg || 'لحظة…')}</span></div>`; else b.remove(); }
+  if (b) { if (busyN) b.innerHTML = `<div><span class="spin"></span><span>${esc(msg || L('لحظة…'))}</span></div>`; else b.remove(); }
 }
 
 /* ---------- rendering ---------- */
@@ -913,10 +929,10 @@ function taskRow(t, opt = {}) {
   if (t.est || pom) meta.push(`<span class="num">${I.timer}${pom}${t.est ? '/' + t.est : ''}</span>`);
   const open = !S.dev.collapsed[t.id];
   return `<div class="task pr${t.prio || 0} ${t.done ? 'done' : ''} ${active ? 'active' : ''}" data-tid="${esc(t.id)}">
-    <button class="ck" data-act="toggle-task" data-id="${esc(t.id)}" aria-label="${t.done ? 'رجّعها' : 'خلصت'}"><span>${I.check}</span></button>
+    <button class="ck" data-act="toggle-task" data-id="${esc(t.id)}" aria-label="${t.done ? L('رجّعها') : L('خلصت')}"><span>${I.check}</span></button>
     <button class="body" data-act="edit-task" data-id="${esc(t.id)}"><span class="t">${esc(t.title)}</span>${meta.length ? `<span class="m">${meta.join('')}</span>` : ''}</button>
-    ${kids.length && opt.nest ? `<button class="tog" data-act="fold" data-id="${esc(t.id)}" aria-expanded="${open}" aria-label="المهام الصغيرة"><span>${kDone}/${kids.length}</span>${I.chev}</button>` : ''}
-    ${t.done ? '' : `<button class="go" data-act="focus-task" data-id="${esc(t.id)}" aria-label="ابدأ تركيز على المهمة">${active && tt.running ? I.pause : I.play}</button>`}
+    ${kids.length && opt.nest ? `<button class="tog" data-act="fold" data-id="${esc(t.id)}" aria-expanded="${open}" aria-label="${L("المهام الصغيرة")}"><span>${kDone}/${kids.length}</span>${I.chev}</button>` : ''}
+    ${t.done ? '' : `<button class="go" data-act="focus-task" data-id="${esc(t.id)}" aria-label="${L("ابدأ تركيز على المهمة")}">${active && tt.running ? I.pause : I.play}</button>`}
   </div>`;
 }
 /* a list that nests child tasks under their parent when both are in it */
@@ -932,8 +948,8 @@ function treeList(arr, opt = {}) {
   return `<div class="list">${roots.map(row).join('')}</div>`;
 }
 const section = (title, arr, opt = {}) => arr.length ? `<div class="block"><div class="sec-head"><h3>${title}</h3><span class="c">${arr.filter((t) => !t.parentId || !arr.some((x) => x.id === t.parentId)).length}</span></div>${treeList(arr, opt)}</div>` : '';
-const quickAdd = (ph, id = 'qa') => `<form class="quick" data-form="quick"><input id="${id}" placeholder="${ph}" autocomplete="off" enterkeyhint="done" aria-label="مهمة جديدة"><button aria-label="أضف">${I.plus}</button></form>`;
-function greet() { const h = new Date().getHours(), n = (S.pref.userName || '').trim(); return (h < 12 ? 'صباح الخير' : h < 17 ? 'يومك سعيد' : 'مساء الخير') + (n ? ` يا ${esc(n)}` : ''); }
+const quickAdd = (ph, id = 'qa') => `<form class="quick" data-form="quick"><input id="${id}" placeholder="${ph}" autocomplete="off" enterkeyhint="done" aria-label="${L("مهمة جديدة")}"><button aria-label="${L("أضف")}">${I.plus}</button></form>`;
+function greet() { const h = new Date().getHours(), n = (S.pref.userName || '').trim(); return (h < 12 ? L('صباح الخير') : h < 17 ? L('يومك سعيد') : L('مساء الخير')) + (n ? (LANG === 'en' ? `, ${esc(n)}` : ` ${L("يا")} ${esc(n)}`) : ''); }
 /* open tasks whose parent is also open come along with their parent */
 function withParents(list) {
   const ids = new Set(list.map((t) => t.id)), out = list.slice();
@@ -943,7 +959,7 @@ function withParents(list) {
 function habitPills(day) {
   const hs = habits().filter((h) => !h.archived && scheduled(h, day));
   if (!hs.length) return '';
-  return `<div class="block"><div class="sec-head"><h3>عادات النهارده</h3><button class="link" data-act="nav" data-v="habits">كل العادات ${I.chev}</button></div>
+  return `<div class="block"><div class="sec-head"><h3>${L("عادات النهارده")}</h3><button class="link" data-act="nav" data-v="habits">${L("كل العادات")} ${I.chev}</button></div>
     <div class="hpills">${hs.map((h) => { const c = hCount(h, day), tg = h.target || 1, on = c >= tg; return `<button class="hpill ${on ? 'on' : ''}" style="--hc:${hc(h)}" data-act="habit-tick" data-id="${esc(h.id)}"><span class="r">${on ? I.check : tg > 1 ? `${c}/${tg}` : ''}</span>${esc(h.name)}</button>`; }).join('')}</div></div>`;
 }
 function deliveries() {
@@ -951,7 +967,7 @@ function deliveries() {
   const td = dkey(), soon = addDays(td, 2);
   const ps = projects().filter((p) => isG(p) && openProj(p) && p.delivery && p.delivery <= soon && p.gstage !== '1 - Quotation').sort((a, b) => (a.delivery < b.delivery ? -1 : 1));
   if (!ps.length) return '';
-  return `<div class="block"><div class="sec-head"><h3>${I.truck} تسليمات جرافيكوو</h3><span class="c">${ps.length}</span></div><div class="list">${ps.map((p) => `<button class="srow" data-act="open-project" data-id="${esc(p.id)}"><span class="grow"><b>${esc(p.name)}</b><br><span class="s">${esc(p.client)} · ${esc(stageName(p))}</span></span><span class="tag ${p.delivery < td ? 'red' : p.delivery === td ? 'dark' : ''}">${p.delivery < td ? 'متأخر · ' : ''}${dueLabel(p.delivery)}</span></button>`).join('')}</div></div>`;
+  return `<div class="block"><div class="sec-head"><h3>${I.truck} ${L("تسليمات جرافيكوو")}</h3><span class="c">${ps.length}</span></div><div class="list">${ps.map((p) => `<button class="srow" data-act="open-project" data-id="${esc(p.id)}"><span class="grow"><b>${esc(p.name)}</b><br><span class="s">${esc(p.client)} · ${esc(stageName(p))}</span></span><span class="tag ${p.delivery < td ? 'red' : p.delivery === td ? 'dark' : ''}">${p.delivery < td ? L('متأخر · ') : ''}${dueLabel(p.delivery)}</span></button>`).join('')}</div></div>`;
 }
 
 function viewTasks() {
@@ -962,7 +978,7 @@ function viewTasks() {
     inbox: open.filter((t) => !t.projectId && !t.due && !t.parentId).length,
     all: open.filter((t) => !t.parentId).length,
   };
-  const chips = `<div class="chips">${[['today', 'النهارده'], ['upcoming', 'الجاي'], ['inbox', 'من غير مشروع'], ['all', 'الكل'], ['done', 'اللي خلص']].map(([v, l]) => chip('filter', v, `${l}${cnt[v] ? `<span class="c">${cnt[v]}</span>` : ''}`, filter === v)).join('')}</div>`;
+  const chips = `<div class="chips">${[['today', L('النهارده')], ['upcoming', L('الجاي')], ['inbox', L('من غير مشروع')], ['all', L('الكل')], ['done', L('اللي خلص')]].map(([v, l]) => chip('filter', v, `${l}${cnt[v] ? `<span class="c">${cnt[v]}</span>` : ''}`, filter === v)).join('')}</div>`;
   let body = '';
   if (filter === 'today') {
     const late = withParents(open.filter((t) => t.due && t.due < td)).sort(sortTasks);
@@ -973,36 +989,36 @@ function viewTasks() {
     const hs = habits().filter((h) => !h.archived && scheduled(h, td)), hd = hs.filter((h) => hDone(h, td)).length;
     const d = new Date();
     body += `<div class="hello"><div class="eyebrow">${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}</div><h1>${greet()}</h1>
-      <div class="sub">${n ? `قدامك ${n} ${n > 10 ? 'مهمة' : 'مهام'} النهارده${late.length ? ` (فيه متأخر)` : ''}` : 'مفيش مهام النهارده — ضيف واحدة وابدأ'}</div>
-      <div class="stats3"><button class="stat" data-act="nav" data-v="stats"><b>${fm.v}</b><span>${fm.u} تركيز</span></button><button class="stat" data-act="filter" data-v="done"><b>${doneToday.length}</b><span>مهام خلصت</span></button><button class="stat" data-act="nav" data-v="habits"><b>${hs.length ? `${hd}/${hs.length}` : streak()}</b><span>${hs.length ? 'عادات النهارده' : 'يوم ورا بعض'}</span></button></div></div>`;
+      <div class="sub">${n ? `${L("قدامك")} ${n} ${n > 10 ? L('مهمة') : L('مهام')} ${L("النهارده ")}${late.length ? ` (${L("فيه متأخر)")}` : ''}` : L('مفيش مهام النهارده — ضيف واحدة وابدأ')}</div>
+      <div class="stats3"><button class="stat" data-act="nav" data-v="stats"><b>${fm.v}</b><span>${fm.u} ${L("تركيز")}</span></button><button class="stat" data-act="filter" data-v="done"><b>${doneToday.length}</b><span>${L("مهام خلصت")}</span></button><button class="stat" data-act="nav" data-v="habits"><b>${hs.length ? `${hd}/${hs.length}` : streak()}</b><span>${hs.length ? L('عادات النهارده') : L('يوم ورا بعض')}</span></button></div></div>`;
     body += habitPills(td) + deliveries();
-    body += quickAdd('أضف مهمة للنهارده…');
-    body += section('متأخرة', late) + section('النهارده', today);
-    if (!late.length && !today.length) body += `<div class="card empty"><b>يومك فاضي</b>اكتب أول مهمة فوق، أو شوف «الجاي» و«من غير مشروع».</div>`;
-    if (doneToday.length) body += `<div class="block"><div class="sec-head"><h3>خلصت النهارده</h3><button class="link" data-act="show-done">${S.dev.showDone ? 'اخفي' : 'اعرض'} (${doneToday.length})</button></div>${S.dev.showDone ? treeList(doneToday.map((t) => t.done ? t : { ...t, done: true })) : ''}</div>`;
+    body += quickAdd(L('أضف مهمة للنهارده…'));
+    body += section(L('متأخرة'), late) + section(L('النهارده'), today);
+    if (!late.length && !today.length) body += `<div class="card empty"><b>${L("يومك فاضي")}</b>${L("اكتب أول مهمة فوق، أو شوف «الجاي» و«من غير مشروع».")}</div>`;
+    if (doneToday.length) body += `<div class="block"><div class="sec-head"><h3>${L("خلصت النهارده")}</h3><button class="link" data-act="show-done">${S.dev.showDone ? L('اخفي') : L('اعرض')} (${doneToday.length})</button></div>${S.dev.showDone ? treeList(doneToday.map((t) => t.done ? t : { ...t, done: true })) : ''}</div>`;
   } else if (filter === 'upcoming') {
-    body += quickAdd('أضف مهمة لبكرة…');
+    body += quickAdd(L('أضف مهمة لبكرة…'));
     const up = open.filter((t) => t.due && t.due > td).sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : sortTasks(a, b)));
     const groups = {}; up.forEach((t) => (groups[t.due] ||= []).push(t));
     const ks = Object.keys(groups);
-    body += ks.length ? ks.map((k) => section(dueLabel(k), groups[k])).join('') : `<div class="card empty"><b>مفيش حاجة جاية</b>المهام اللي ليها ميعاد بعد النهارده هتظهر هنا.</div>`;
+    body += ks.length ? ks.map((k) => section(dueLabel(k), groups[k])).join('') : `<div class="card empty"><b>${L("مفيش حاجة جاية")}</b>${L("المهام اللي ليها ميعاد بعد النهارده هتظهر هنا.")}</div>`;
   } else if (filter === 'inbox') {
-    body += quickAdd('اكتب أي فكرة أو مهمة…');
+    body += quickAdd(L('اكتب أي فكرة أو مهمة…'));
     const ib = open.filter((t) => !t.projectId && !t.due && !t.parentId);
     const withKids = ib.concat(open.filter((t) => t.parentId && ib.some((x) => x.id === t.parentId))).sort(sortTasks);
-    body += ib.length ? treeList(withKids) : `<div class="card empty"><b>الصندوق فاضي</b>المهام اللي من غير مشروع ولا ميعاد بتتجمع هنا.</div>`;
+    body += ib.length ? treeList(withKids) : `<div class="card empty"><b>${L("الصندوق فاضي")}</b>${L("المهام اللي من غير مشروع ولا ميعاد بتتجمع هنا.")}</div>`;
   } else if (filter === 'all') {
-    body += quickAdd('أضف مهمة…');
+    body += quickAdd(L('أضف مهمة…'));
     const ps = projects().filter(openProj);
     for (const p of ps.filter((p) => isG(p))) body += section(`<span class="pdot" style="background:${esc(p.color)}"></span>${esc(p.name)}`, open.filter((t) => t.projectId === p.id).sort(sortTasks), { noProject: true });
     for (const area of ['work', 'life']) for (const p of ps.filter((p) => !isG(p) && p.area === area)) body += section(`<span class="pdot" style="background:${esc(p.color)}"></span>${esc(p.name)}`, open.filter((t) => t.projectId === p.id).sort(sortTasks), { noProject: true });
-    body += section('من غير مشروع', open.filter((t) => !t.projectId || !openProj(S.projects[t.projectId])).sort(sortTasks));
-    if (!open.length) body += `<div class="card empty"><b>مفيش مهام مفتوحة</b>كل حاجة خلصت 👏</div>`;
+    body += section(L('من غير مشروع'), open.filter((t) => !t.projectId || !openProj(S.projects[t.projectId])).sort(sortTasks));
+    if (!open.length) body += `<div class="card empty"><b>${L("مفيش مهام مفتوحة")}</b>${L("كل حاجة خلصت")} 👏</div>`;
   } else {
     const dn = all.filter((t) => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0)).slice(0, 150);
-    body += dn.length ? treeList(dn) : `<div class="card empty"><b>لسه مفيش</b>المهام اللي بتخلصها بتتجمع هنا.</div>`;
+    body += dn.length ? treeList(dn) : `<div class="card empty"><b>${L("لسه مفيش")}</b>${L("المهام اللي بتخلصها بتتجمع هنا.")}</div>`;
   }
-  return `<div class="block"><h1>المهام</h1></div>${chips}${body}`;
+  return `<div class="block"><h1>${L("المهام")}</h1></div>${chips}${body}`;
 }
 
 function projStats(p) {
@@ -1017,24 +1033,24 @@ function stageBar(p) {
 function pcard(p) {
   const st = projStats(p), fm = fmtMin(st.mins), td = dkey();
   const sub = isG(p)
-    ? `${esc(p.client)}${p.delivery ? ` · <span style="${p.delivery < td && !p.closed ? 'color:var(--red-ink);font-weight:700' : ''}">تسليم ${dueLabel(p.delivery)}</span>` : ''}`
-    : `${st.done}/${st.total} خلصت${st.mins ? ` · ${fm.v} ${fm.u} تركيز` : ''}`;
+    ? `${esc(p.client)}${p.delivery ? ` · <span style="${p.delivery < td && !p.closed ? 'color:var(--red-ink);font-weight:700' : ''}">${L("تسليم")} ${dueLabel(p.delivery)}</span>` : ''}`
+    : `${st.done}/${st.total} ${L("خلصت")}${st.mins ? ` · ${fm.v} ${fm.u} ${L("تركيز")}` : ''}`;
   return `<button class="pcard" data-act="open-project" data-id="${esc(p.id)}"><div class="row"><i class="pdot" style="background:${esc(p.color)}"></i><b class="grow">${esc(p.name)}</b>${isG(p) ? `<span class="tag ${p.gstage === '1 - Quotation' ? 'dark' : 'red'}">${esc(stageName(p))}</span>` : `<span class="tag">${esc(stageName(p))}</span>`}${st.open ? `<span class="cnt num">${st.open}</span>` : ''}</div>
     ${stageBar(p)}<div class="sub">${sub}</div></button>`;
 }
 function viewProjects() {
   const ps = projects();
   const gps = ps.filter((p) => isG(p) && openProj(p)).sort((a, b) => (a.gstage === '1 - Quotation') - (b.gstage === '1 - Quotation') || ((a.delivery || '9') < (b.delivery || '9') ? -1 : 1));
-  let h = `<div class="sec-head"><h1>المشاريع</h1><button class="btn primary small" data-act="new-project">${I.plus} مشروع</button></div>`;
-  if (CFG.graficoo) h += `<div class="block"><div class="sec-head"><h3>شغل جرافيكوو</h3>${S.dev.gToken ? `<button class="link" data-act="g-refresh">${I.sync} حدّث</button>` : `<button class="link" data-act="settings" data-v="g">اربط ${I.chev}</button>`}</div>`;
-  if (CFG.graficoo) h += gps.length ? `<div class="pgrid">${gps.map(pcard).join('')}</div>` : `<div class="card empty">${S.dev.gToken ? 'مفيش مشاريع مفتوحة في جرافيكوو دلوقتي.' : '<b>مشاريع جرافيكوو بتيجي هنا لوحدها</b>اربط حسابك من الإعدادات بالـ PIN بتاع ابلكيشن جرافيكوو.'}</div>`;
+  let h = `<div class="sec-head"><h1>${L("المشاريع")}</h1><button class="btn primary small" data-act="new-project">${I.plus} ${L("مشروع")}</button></div>`;
+  if (CFG.graficoo) h += `<div class="block"><div class="sec-head"><h3>${L("شغل جرافيكوو")}</h3>${S.dev.gToken ? `<button class="link" data-act="g-refresh">${I.sync} ${L("حدّث")}</button>` : `<button class="link" data-act="settings" data-v="g">${L("اربط")} ${I.chev}</button>`}</div>`;
+  if (CFG.graficoo) h += gps.length ? `<div class="pgrid">${gps.map(pcard).join('')}</div>` : `<div class="card empty">${S.dev.gToken ? L('مفيش مشاريع مفتوحة في جرافيكوو دلوقتي.') : L('<b>مشاريع جرافيكوو بتيجي هنا لوحدها</b>اربط حسابك من الإعدادات بالـ PIN بتاع ابلكيشن جرافيكوو.')}</div>`;
   if (CFG.graficoo) h += `</div>`;
   for (const area of ['work', 'life']) {
     const arr = ps.filter((p) => !isG(p) && p.area === area && openProj(p));
-    h += `<div class="block"><div class="sec-head"><h3>${area === 'work' ? workLabel() : areaName('life')}</h3><span class="c">${arr.length}</span></div><div class="pgrid">${arr.map(pcard).join('')}<button class="pcard addcard" data-act="new-project" data-v="${area}">${I.plus} مشروع ${area === 'work' ? 'شغل' : 'شخصي'}</button></div></div>`;
+    h += `<div class="block"><div class="sec-head"><h3>${area === 'work' ? workLabel() : areaName('life')}</h3><span class="c">${arr.length}</span></div><div class="pgrid">${arr.map(pcard).join('')}<button class="pcard addcard" data-act="new-project" data-v="${area}">${I.plus} ${L("مشروع")} ${area === 'work' ? L('شغل') : L('شخصي')}</button></div></div>`;
   }
   const arch = ps.filter((p) => !openProj(p));
-  if (arch.length) h += `<div class="block"><div class="sec-head"><h3>اتسلم / مؤرشف</h3><button class="link" data-act="show-arch">${S.dev.showArch ? 'اخفي' : 'اعرض'} (${arch.length})</button></div>${S.dev.showArch ? `<div class="list">${arch.map((p) => `<button class="pickrow" data-act="open-project" data-id="${esc(p.id)}"><i class="pdot" style="background:${esc(p.color)}"></i><b>${esc(p.name)}</b><span>${isG(p) ? esc(stageName(p)) : 'مؤرشف'}</span></button>`).join('')}</div>` : ''}</div>`;
+  if (arch.length) h += `<div class="block"><div class="sec-head"><h3>${L("اتسلم / مؤرشف")}</h3><button class="link" data-act="show-arch">${S.dev.showArch ? L('اخفي') : L('اعرض')} (${arch.length})</button></div>${S.dev.showArch ? `<div class="list">${arch.map((p) => `<button class="pickrow" data-act="open-project" data-id="${esc(p.id)}"><i class="pdot" style="background:${esc(p.color)}"></i><b>${esc(p.name)}</b><span>${isG(p) ? esc(stageName(p)) : L('مؤرشف')}</span></button>`).join('')}</div>` : ''}</div>`;
   return h;
 }
 function viewProject() {
@@ -1042,33 +1058,33 @@ function viewProject() {
   if (!live(p)) { view = 'projects'; return viewProjects(); }
   const st = projStats(p), fm = fmtMin(st.mins), stages = stagesOf(p), si = stageIdx(p), td = dkey();
   const ts = tasks().filter((t) => t.projectId === p.id);
-  const gHead = isG(p) ? `<div class="card"><div class="row"><span class="gbadge">من جرافيكوو · ${esc(p.gid)}</span><span class="grow"></span><a class="link" href="${G_APP}" target="_blank" rel="noopener">افتح جرافيكوو ${I.ext}</a></div>
-      <div class="ginfo"><div><span>العميل</span><b>${esc(p.client) || '—'}</b></div><div><span>التسليم</span><b style="${p.delivery && p.delivery < td && !p.closed ? 'color:var(--red-ink)' : ''}">${p.delivery ? dueLabel(p.delivery) : '—'}</b></div></div></div>` : '';
-  const stageTrack = `<div class="block"><div class="sec-head"><h3>المراحل</h3>${isG(p) ? (si >= 0 && si < G_STAGES.length - 1 ? `<button class="btn dark small" data-act="g-advance" data-id="${esc(p.id)}">المرحلة اللي بعدها ${I.chev}</button>` : '') : `<span class="sub">دوس على المرحلة</span>`}</div>
+  const gHead = isG(p) ? `<div class="card"><div class="row"><span class="gbadge">${L("من جرافيكوو")} · ${esc(p.gid)}</span><span class="grow"></span><a class="link" href="${G_APP}" target="_blank" rel="noopener">${L("افتح جرافيكوو")} ${I.ext}</a></div>
+      <div class="ginfo"><div><span>${L("العميل")}</span><b>${esc(p.client) || '—'}</b></div><div><span>${L("التسليم")}</span><b style="${p.delivery && p.delivery < td && !p.closed ? 'color:var(--red-ink)' : ''}">${p.delivery ? dueLabel(p.delivery) : '—'}</b></div></div></div>` : '';
+  const stageTrack = `<div class="block"><div class="sec-head"><h3>${L("المراحل")}</h3>${isG(p) ? (si >= 0 && si < G_STAGES.length - 1 ? `<button class="btn dark small" data-act="g-advance" data-id="${esc(p.id)}">${L("المرحلة اللي بعدها")} ${I.chev}</button>` : '') : `<span class="sub">${L("دوس على المرحلة")}</span>`}</div>
     <div class="stages">${stages.map((s, k) => `<button class="stg ${k < si ? 'done' : k === si ? 'cur' : ''}" ${isG(p) ? 'disabled' : `data-act="set-stage" data-id="${esc(p.id)}" data-v="${k}"`}><i>${k < si ? '✓' : k + 1}</i>${esc(s)}</button>`).join('')}</div></div>`;
   let list = '';
   if (projFilter === 'open') {
     const open = ts.filter((t) => !t.done);
     const groups = stages.map((s, k) => ({ k, name: s, items: open.filter((t) => t.stage === k) }));
     const general = open.filter((t) => t.stage == null || !stages[t.stage]);
-    list += `<div class="block"><div class="sec-head"><h3>خطوات «${esc(stages[si] || 'المرحلة')}»</h3><span class="c">${groups[si] ? groups[si].items.length : 0}</span></div>
-      <form class="quick" data-form="quick"><input id="qa" placeholder="أضف خطوة للمرحلة دي…" autocomplete="off" enterkeyhint="done"><button aria-label="أضف">${I.plus}</button></form>
+    list += `<div class="block"><div class="sec-head"><h3>${L("خطوات «")}${esc(stages[si] || L('المرحلة'))}»</h3><span class="c">${groups[si] ? groups[si].items.length : 0}</span></div>
+      <form class="quick" data-form="quick"><input id="qa" placeholder="${L("أضف خطوة للمرحلة دي…")}" autocomplete="off" enterkeyhint="done"><button aria-label="${L("أضف")}">${I.plus}</button></form>
       ${groups[si] && groups[si].items.length ? treeList(groups[si].items.sort(sortTasks), { noProject: true }) : ''}</div>`;
-    for (const g of groups) if (g.k !== si && g.items.length) list += section(`خطوات «${esc(g.name)}»`, g.items.sort(sortTasks), { noProject: true });
-    list += section('مهام عامة', general.sort(sortTasks), { noProject: true });
+    for (const g of groups) if (g.k !== si && g.items.length) list += section(`${L("خطوات «")}${esc(g.name)}»`, g.items.sort(sortTasks), { noProject: true });
+    list += section(L('مهام عامة'), general.sort(sortTasks), { noProject: true });
   } else {
     const dn = ts.filter((t) => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
-    list = dn.length ? treeList(dn, { noProject: true, showStage: true }) : `<div class="card empty"><b>لسه مفيش حاجة خلصت</b></div>`;
+    list = dn.length ? treeList(dn, { noProject: true, showStage: true }) : `<div class="card empty"><b>${L("لسه مفيش حاجة خلصت")}</b></div>`;
   }
   const pnotes = notes().filter((n) => n.projectId === p.id).sort((a, b) => (b.pinned - a.pinned) || (b.updatedAt - a.updatedAt));
-  return `<div class="phead"><div class="row"><button class="icon-btn" data-act="nav" data-v="projects" aria-label="رجوع">${I.back}</button><i class="pdot" style="background:${esc(p.color)}"></i><h1 class="grow">${esc(p.name)}</h1><button class="icon-btn" data-act="edit-project" data-id="${esc(p.id)}" aria-label="إعدادات المشروع">${I.edit}</button></div>
+  return `<div class="phead"><div class="row"><button class="icon-btn" data-act="nav" data-v="projects" aria-label="${L("رجوع")}">${I.back}</button><i class="pdot" style="background:${esc(p.color)}"></i><h1 class="grow">${esc(p.name)}</h1><button class="icon-btn" data-act="edit-project" data-id="${esc(p.id)}" aria-label="${L("إعدادات المشروع")}">${I.edit}</button></div>
     ${gHead}
-    <div class="card"><div class="row"><span class="sub grow">${isG(p) ? 'شغل جرافيكوو' : areaName(p.area)}${p.archived ? ' · مؤرشف' : ''}${p.gone ? ' · اتشال من جرافيكوو' : ''}</span><b class="num">${st.done}/${st.total}</b></div><div class="bar"><i style="width:${st.total ? Math.round((st.done / st.total) * 100) : 0}%;background:${esc(p.color)}"></i></div>
-    <div class="row sub"><span class="grow">${st.open} خطوة مفتوحة</span><span>${fm.v} ${fm.u} تركيز</span></div></div></div>
+    <div class="card"><div class="row"><span class="sub grow">${isG(p) ? L('شغل جرافيكوو') : areaName(p.area)}${p.archived ? L(' · مؤرشف') : ''}${p.gone ? L(' · اتشال من جرافيكوو') : ''}</span><b class="num">${st.done}/${st.total}</b></div><div class="bar"><i style="width:${st.total ? Math.round((st.done / st.total) * 100) : 0}%;background:${esc(p.color)}"></i></div>
+    <div class="row sub"><span class="grow">${st.open} ${L("خطوة مفتوحة")}</span><span>${fm.v} ${fm.u} ${L("تركيز")}</span></div></div></div>
     ${stageTrack}
-    <div class="chips">${chip('pfilter', 'open', `مفتوحة<span class="c">${st.open}</span>`, projFilter === 'open')}${chip('pfilter', 'done', `خلصت<span class="c">${st.done}</span>`, projFilter === 'done')}</div>
+    <div class="chips">${chip('pfilter', 'open', `${L("مفتوحة")}<span class="c">${st.open}</span>`, projFilter === 'open')}${chip('pfilter', 'done', `${L("خلصت")}<span class="c">${st.done}</span>`, projFilter === 'done')}</div>
     ${list}
-    <div class="block"><div class="sec-head"><h3>ملاحظات المشروع</h3><button class="link" data-act="new-note" data-v="text" data-id="${esc(p.id)}">${I.plus} ملاحظة</button></div>${pnotes.length ? `<div class="notes">${pnotes.map(noteCard).join('')}</div>` : ''}</div>`;
+    <div class="block"><div class="sec-head"><h3>${L("ملاحظات المشروع")}</h3><button class="link" data-act="new-note" data-v="text" data-id="${esc(p.id)}">${I.plus} ${L("ملاحظة")}</button></div>${pnotes.length ? `<div class="notes">${pnotes.map(noteCard).join('')}</div>` : ''}</div>`;
 }
 
 function ringSvg() {
@@ -1077,23 +1093,23 @@ function ringSvg() {
 function timerPanel(where) {
   const t = T(), P = t.mode === 'pomo', task = S.tasks[t.taskId], ev = S.pref.longEvery;
   const dots = P ? `<div class="cyc">${Array.from({ length: ev }, (_, i) => `<i class="${i < (t.cycle % ev) || (t.cycle % ev === 0 && t.cycle > 0 && t.phase === 'long') ? 'on' : ''}"></i>`).join('')}</div>` : '';
-  const pc = (k, v, on, red) => `<button type="button" class="chip ${red ? 'red' : ''}" data-act="preset" data-k="${k}" data-v="${v}" aria-pressed="${on}">${v} د</button>`;
-  const custom = (k, cur, list) => { const c = !list.includes(cur); return chip('custom', k, c ? `مخصص · ${cur}` : 'مخصص', c); };
+  const pc = (k, v, on, red) => `<button type="button" class="chip ${red ? 'red' : ''}" data-act="preset" data-k="${k}" data-v="${v}" aria-pressed="${on}">${v} ${L("د")}</button>`;
+  const custom = (k, cur, list) => { const c = !list.includes(cur); return chip('custom', k, c ? `${L("مخصص")} · ${cur}` : L('مخصص'), c); };
   const presets = P
-    ? `<div class="pr-row"><span>التركيز</span><div class="chips">${[25, 45].map((v) => pc('focus', v, S.pref.focus === v, 1)).join('')}${custom('focus', S.pref.focus, [25, 45])}</div></div>
-       <div class="pr-row"><span>الراحة</span><div class="chips">${[5, 10, 15].map((v) => pc('short', v, S.pref.short === v)).join('')}${custom('short', S.pref.short, [5, 10, 15])}</div></div>`
-    : `<div class="pr-row"><span>المدة</span><div class="chips">${[10, 15, 25, 45].map((v) => pc('timer', v, t.timerMin === v, 1)).join('')}${custom('timer', t.timerMin, [10, 15, 25, 45])}</div></div>`;
+    ? `<div class="pr-row"><span>${L("التركيز")}</span><div class="chips">${[25, 45].map((v) => pc('focus', v, S.pref.focus === v, 1)).join('')}${custom('focus', S.pref.focus, [25, 45])}</div></div>
+       <div class="pr-row"><span>${L("الراحة")}</span><div class="chips">${[5, 10, 15].map((v) => pc('short', v, S.pref.short === v)).join('')}${custom('short', S.pref.short, [5, 10, 15])}</div></div>`
+    : `<div class="pr-row"><span>${L("المدة")}</span><div class="chips">${[10, 15, 25, 45].map((v) => pc('timer', v, t.timerMin === v, 1)).join('')}${custom('timer', t.timerMin, [10, 15, 25, 45])}</div></div>`;
   return `<div class="tp">
-    <div class="seg">${[['pomo', 'بومودورو'], ['timer', 'تايمر عادي']].map(([v, l]) => `<button data-act="mode" data-v="${v}" aria-pressed="${t.mode === v}">${l}</button>`).join('')}</div>
+    <div class="seg">${[['pomo', L('بومودورو')], ['timer', L('تايمر عادي')]].map(([v, l]) => `<button data-act="mode" data-v="${v}" aria-pressed="${t.mode === v}">${l}</button>`).join('')}</div>
     <div class="ring-wrap">${ringSvg()}<div class="ring-c"><div class="ph">${phaseName()}</div><div class="time" data-tm="time">${fmt(remaining())}</div>${dots}</div></div>
-    <div class="ctrl"><button class="cb" data-act="reset" aria-label="من الأول" title="من الأول">${I.reset}</button><button class="cb main" data-act="toggle-timer" data-tm="toggle" aria-label="ابدأ">${I.play}</button><button class="cb" data-act="skip" aria-label="${P ? 'المرحلة اللي بعدها' : 'إنهاء'}" title="${P ? 'تخطي' : 'إنهاء'}">${I.skip}</button></div>
-    <div class="ext">${[1, 5, 10].map((m) => `<button class="chip" data-act="extend" data-v="${m}"><span dir="ltr">+${m}</span> د</button>`).join('')}</div>
-    <div class="tpick"><button data-act="pick-task"><span class="l">${task ? 'بتشتغل على' : 'مهمة الجلسة'}</span><b>${task ? esc(task.title) : 'اختار مهمة (اختياري)'}</b></button>${task ? `<button class="icon-btn" data-act="clear-task" aria-label="شيل المهمة">${I.x}</button>` : ''}</div>
+    <div class="ctrl"><button class="cb" data-act="reset" aria-label="${L("من الأول")}" title="${L("من الأول")}">${I.reset}</button><button class="cb main" data-act="toggle-timer" data-tm="toggle" aria-label="${L("ابدأ")}">${I.play}</button><button class="cb" data-act="skip" aria-label="${P ? L('المرحلة اللي بعدها') : L('إنهاء')}" title="${P ? L('تخطي') : L('إنهاء')}">${I.skip}</button></div>
+    <div class="ext">${[1, 5, 10].map((m) => `<button class="chip" data-act="extend" data-v="${m}"><span dir="ltr">+${m}</span> ${L("د")}</button>`).join('')}</div>
+    <div class="tpick"><button data-act="pick-task"><span class="l">${task ? L('بتشتغل على') : L('مهمة الجلسة')}</span><b>${task ? esc(task.title) : L('اختار مهمة (اختياري)')}</b></button>${task ? `<button class="icon-btn" data-act="clear-task" aria-label="${L("شيل المهمة")}">${I.x}</button>` : ''}</div>
     <div class="presets">${presets}</div>
-    ${where === 'dock' ? `<button class="btn ghost small" data-act="widget">${I.widget} افتح الويدجت العائم</button>` : ''}
+    ${where === 'dock' ? `<button class="btn ghost small" data-act="widget">${I.widget} ${L("افتح الويدجت العائم")}</button>` : ''}
   </div>`;
 }
-function viewTimer() { return `<div class="block" style="justify-items:center;text-align:center"><h1>${T().mode === 'pomo' ? 'بومودورو' : 'التايمر'}</h1></div>${timerPanel('main')}`; }
+function viewTimer() { return `<div class="block" style="justify-items:center;text-align:center"><h1>${T().mode === 'pomo' ? L('بومودورو') : L('التايمر')}</h1></div>${timerPanel('main')}`; }
 
 function weekCells(h) {
   const td = dkey();
@@ -1102,15 +1118,15 @@ function weekCells(h) {
 function viewHabits() {
   const td = dkey(), hs = habits().filter((h) => !h.archived), arch = habits().filter((h) => h.archived);
   const todayHs = hs.filter((h) => scheduled(h, td)), done = todayHs.filter((h) => hDone(h, td)).length;
-  let h = `<div class="sec-head"><h1>العادات</h1><button class="btn primary small" data-act="new-habit">${I.plus} عادة</button></div>`;
-  if (todayHs.length) h += `<div class="card"><div class="row"><b class="grow">النهارده</b><span class="num sub">${done}/${todayHs.length}</span></div><div class="bar"><i style="width:${Math.round((done / todayHs.length) * 100)}%"></i></div></div>`;
+  let h = `<div class="sec-head"><h1>${L("العادات")}</h1><button class="btn primary small" data-act="new-habit">${I.plus} ${L("عادة")}</button></div>`;
+  if (todayHs.length) h += `<div class="card"><div class="row"><b class="grow">${L("النهارده")}</b><span class="num sub">${done}/${todayHs.length}</span></div><div class="bar"><i style="width:${Math.round((done / todayHs.length) * 100)}%"></i></div></div>`;
   h += hs.length ? hs.map((x) => {
     const c = hCount(x, td), tg = x.target || 1, on = c >= tg, sch = scheduled(x, td), s = hStreak(x);
     const wk = Array.from({ length: 7 }, (_, i) => addDays(td, i - 6)), wkS = wk.filter((d) => scheduled(x, d)), wkD = wkS.filter((d) => hDone(x, d)).length;
-    return `<div class="habit" style="--hc:${hc(x)}"><div class="hh"><button class="body" data-act="edit-habit" data-id="${esc(x.id)}"><b>${esc(x.name)}</b><span class="s">${s ? `<span class="fire">🔥 ${s} ${s > 10 ? 'يوم' : 'أيام'}</span>` : ''}<span>الأسبوع ده ${wkD}/${wkS.length}</span>${x.days && x.days.length ? `<span>${x.days.map((d) => DAYS_S[d]).join('، ')}</span>` : ''}</span></button>
-      ${sch || c ? `<button class="hbtn ${on ? 'on' : ''}" data-act="habit-tick" data-id="${esc(x.id)}" aria-label="سجّل النهارده">${on ? I.check : tg > 1 ? `${c}/${tg}` : ''}</button>` : '<span class="tag">مش النهارده</span>'}</div>${weekCells(x)}</div>`;
-  }).join('') : `<div class="card empty"><b>ابدأ بعادة واحدة صغيرة</b>زي «اقرا 10 صفحات» أو «مية 8 كوبايات». علّم عليها كل يوم وشوف السلسلة بتكبر.</div>`;
-  if (arch.length) h += `<div class="block"><div class="sec-head"><h3>متوقفة</h3><span class="c">${arch.length}</span></div><div class="list">${arch.map((x) => `<button class="pickrow" data-act="edit-habit" data-id="${esc(x.id)}"><i class="pdot" style="background:${hc(x)}"></i><b>${esc(x.name)}</b></button>`).join('')}</div></div>`;
+    return `<div class="habit" style="--hc:${hc(x)}"><div class="hh"><button class="body" data-act="edit-habit" data-id="${esc(x.id)}"><b>${esc(x.name)}</b><span class="s">${s ? `<span class="fire">🔥 ${s} ${s > 10 ? L('يوم') : L('أيام')}</span>` : ''}<span>${L("الأسبوع ده")} ${wkD}/${wkS.length}</span>${x.days && x.days.length ? `<span>${x.days.map((d) => DAYS_S[d]).join(L('، '))}</span>` : ''}</span></button>
+      ${sch || c ? `<button class="hbtn ${on ? 'on' : ''}" data-act="habit-tick" data-id="${esc(x.id)}" aria-label="${L("سجّل النهارده")}">${on ? I.check : tg > 1 ? `${c}/${tg}` : ''}</button>` : L('<span class="tag">مش النهارده</span>')}</div>${weekCells(x)}</div>`;
+  }).join('') : `<div class="card empty"><b>${L("ابدأ بعادة واحدة صغيرة")}</b>${L("زي «اقرا 10 صفحات» أو «مية 8 كوبايات». علّم عليها كل يوم وشوف السلسلة بتكبر.")}</div>`;
+  if (arch.length) h += `<div class="block"><div class="sec-head"><h3>${L("متوقفة")}</h3><span class="c">${arch.length}</span></div><div class="list">${arch.map((x) => `<button class="pickrow" data-act="edit-habit" data-id="${esc(x.id)}"><i class="pdot" style="background:${hc(x)}"></i><b>${esc(x.name)}</b></button>`).join('')}</div></div>`;
   return h;
 }
 
@@ -1120,7 +1136,7 @@ function noteCard(n) {
   const inner = n.kind === 'list'
     ? items.slice(0, 7).map((it) => `<div class="li ${it.done ? 'done' : ''}"><i></i><span>${esc(it.t)}</span></div>`).join('') + (items.length > 7 ? `<div class="li" style="color:var(--muted)">+${items.length - 7}</div>` : '')
     : (n.body ? `<div class="b">${esc(n.body)}</div>` : '');
-  const foot = [n.pinned ? `<span class="tag">${I.pin.replace('class="i"', 'class="i" style="width:12px;height:12px"')} متثبتة</span>` : '', p && live(p) && view !== 'project' ? `<span class="tag"><i class="pdot" style="background:${esc(p.color)}"></i>${esc(p.name)}</span>` : ''].join('');
+  const foot = [n.pinned ? `<span class="tag">${I.pin.replace('class="i"', 'class="i" style="width:12px;height:12px"')} ${L("متثبتة")}</span>` : '', p && live(p) && view !== 'project' ? `<span class="tag"><i class="pdot" style="background:${esc(p.color)}"></i>${esc(p.name)}</span>` : ''].join('');
   return `<button class="note-c ${n.color ? 'nc-' + n.color : ''}" data-act="edit-note" data-id="${esc(n.id)}">${n.title ? `<h4>${esc(n.title)}</h4>` : ''}${inner}${foot ? `<div class="f">${foot}</div>` : ''}</button>`;
 }
 function viewNotes() {
@@ -1131,13 +1147,13 @@ function viewNotes() {
   ns.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
   const pinned = ns.filter((n) => n.pinned), rest = ns.filter((n) => !n.pinned);
   const pIds = [...new Set(notes().map((n) => n.projectId).filter((id) => id && live(S.projects[id])))];
-  return `<div class="sec-head"><h1>الملاحظات</h1></div>
-    <div class="take"><button data-act="new-note" data-v="text">اكتب ملاحظة…</button><button class="icon-btn" data-act="new-note" data-v="list" aria-label="قايمة جديدة" title="قايمة">${I.list}</button></div>
-    <input class="search" id="noteSearch" type="search" placeholder="دوّر في الملاحظات…" value="${esc(noteQ)}" autocomplete="off">
-    ${pIds.length ? `<div class="chips">${chip('note-proj', '', 'الكل', !noteProj)}${pIds.map((id) => chip('note-proj', id, `<i class="pdot" style="background:${esc(S.projects[id].color)};margin-inline-end:6px"></i>${esc(S.projects[id].name)}`, noteProj === id)).join('')}</div>` : ''}
-    ${pinned.length ? `<div class="block"><div class="eyebrow">متثبتة</div><div class="notes">${pinned.map(noteCard).join('')}</div></div>` : ''}
-    ${rest.length ? `<div class="block">${pinned.length ? '<div class="eyebrow">الباقي</div>' : ''}<div class="notes">${rest.map(noteCard).join('')}</div></div>` : ''}
-    ${!ns.length ? `<div class="card empty">${q ? 'مفيش ملاحظة فيها الكلام ده.' : '<b>مفيش ملاحظات لسه</b>اكتب أفكار، قوايم مشتريات، تفاصيل عميل… أي حاجة.'}</div>` : ''}`;
+  return `<div class="sec-head"><h1>${L("الملاحظات")}</h1></div>
+    <div class="take"><button data-act="new-note" data-v="text">${L("اكتب ملاحظة…")}</button><button class="icon-btn" data-act="new-note" data-v="list" aria-label="${L("قايمة جديدة")}" title="${L("قايمة")}">${I.list}</button></div>
+    <input class="search" id="noteSearch" type="search" placeholder="${L("دوّر في الملاحظات…")}" value="${esc(noteQ)}" autocomplete="off">
+    ${pIds.length ? `<div class="chips">${chip('note-proj', '', L('الكل'), !noteProj)}${pIds.map((id) => chip('note-proj', id, `<i class="pdot" style="background:${esc(S.projects[id].color)};margin-inline-end:6px"></i>${esc(S.projects[id].name)}`, noteProj === id)).join('')}</div>` : ''}
+    ${pinned.length ? `<div class="block"><div class="eyebrow">${L("متثبتة")}</div><div class="notes">${pinned.map(noteCard).join('')}</div></div>` : ''}
+    ${rest.length ? `<div class="block">${pinned.length ? L('<div class="eyebrow">الباقي</div>') : ''}<div class="notes">${rest.map(noteCard).join('')}</div></div>` : ''}
+    ${!ns.length ? `<div class="card empty">${q ? L('مفيش ملاحظة فيها الكلام ده.') : L('<b>مفيش ملاحظات لسه</b>اكتب أفكار، قوايم مشتريات، تفاصيل عميل… أي حاجة.')}</div>` : ''}`;
 }
 
 function viewStats() {
@@ -1151,13 +1167,13 @@ function viewStats() {
   const hs = habits().filter((h) => !h.archived);
   let hsTot = 0, hsDone = 0; for (const h of hs) for (const d of days) if (scheduled(h, d)) { hsTot++; if (hDone(h, d)) hsDone++; }
   const recent = sessions().sort((a, b) => b.end - a.end).slice(0, 12);
-  return `<h1>الإحصائيات</h1>
-    <div class="kpis"><div class="kpi"><b>${tdm.v}</b><span>${tdm.u} تركيز النهارده</span></div><div class="kpi"><b>${wk.v}</b><span>${wk.u} الأسبوع ده</span></div><div class="kpi"><b>${doneWeek}</b><span>مهام خلصت في ٧ أيام</span></div><div class="kpi"><b>${hsTot ? Math.round((hsDone / hsTot) * 100) + '%' : streak()}</b><span>${hsTot ? 'التزام بالعادات' : 'يوم ورا بعض'}</span></div></div>
-    <div class="card"><div class="sec-head"><h3>دقايق التركيز — آخر ٧ أيام</h3></div>
+  return `<h1>${L("الإحصائيات")}</h1>
+    <div class="kpis"><div class="kpi"><b>${tdm.v}</b><span>${tdm.u} ${L("تركيز النهارده")}</span></div><div class="kpi"><b>${wk.v}</b><span>${wk.u} ${L("الأسبوع ده")}</span></div><div class="kpi"><b>${doneWeek}</b><span>${L("مهام خلصت في ٧ أيام")}</span></div><div class="kpi"><b>${hsTot ? Math.round((hsDone / hsTot) * 100) + '%' : streak()}</b><span>${hsTot ? L('التزام بالعادات') : L('يوم ورا بعض')}</span></div></div>
+    <div class="card"><div class="sec-head"><h3>${L("دقايق التركيز — آخر ٧ أيام")}</h3></div>
       <div class="bars">${days.map((d, i) => `<div class="bcol ${d === td ? 'today' : ''}"><div class="bv num">${mins[i] || ''}</div><div class="bt"><div class="b" style="height:${Math.round((mins[i] / max) * 100)}%"></div></div><div class="bl">${DAYS_S[parseD(d).getDay()]}</div></div>`).join('')}</div></div>
-    <div class="card"><div class="sec-head"><h3>الوقت حسب المشروع</h3><span class="c">٧ أيام</span></div>
-      ${pRows.length ? pRows.map(([pid, m]) => { const p = S.projects[pid], f = fmtMin(m); return `<div class="hbar"><div class="row"><i class="pdot" style="background:${p ? esc(p.color) : 'var(--muted)'}"></i><span class="grow">${p ? esc(p.name) : 'من غير مشروع'}</span><span class="num">${f.v} ${f.u}</span></div><div class="bar"><i style="width:${Math.round((m / pmax) * 100)}%;background:${p ? esc(p.color) : 'var(--muted)'}"></i></div></div>`; }).join('') : '<div class="sub">لسه مفيش جلسات تركيز الأسبوع ده.</div>'}</div>
-    <div class="block"><div class="sec-head"><h3>آخر الجلسات</h3></div>${recent.length ? `<div class="list">${recent.map((s) => { const k = S.tasks[s.taskId]; return `<div class="srow"><span class="grow">${k ? esc(k.title) : s.kind === 'timer' ? 'تايمر' : 'تركيز'}${s.partial ? ' <span class="s">(اتقطعت)</span>' : ''}<br><span class="s">${dueLabel(s.day)} · ${clock(s.start)}</span></span><b class="num">${s.minutes} د</b></div>`; }).join('')}</div>` : '<div class="card empty">ابدأ أول جلسة تركيز وهتلاقيها هنا.</div>'}</div>`;
+    <div class="card"><div class="sec-head"><h3>${L("الوقت حسب المشروع")}</h3><span class="c">${L("٧ أيام")}</span></div>
+      ${pRows.length ? pRows.map(([pid, m]) => { const p = S.projects[pid], f = fmtMin(m); return `<div class="hbar"><div class="row"><i class="pdot" style="background:${p ? esc(p.color) : 'var(--muted)'}"></i><span class="grow">${p ? esc(p.name) : L('من غير مشروع')}</span><span class="num">${f.v} ${f.u}</span></div><div class="bar"><i style="width:${Math.round((m / pmax) * 100)}%;background:${p ? esc(p.color) : 'var(--muted)'}"></i></div></div>`; }).join('') : L('<div class="sub">لسه مفيش جلسات تركيز الأسبوع ده.</div>')}</div>
+    <div class="block"><div class="sec-head"><h3>${L("آخر الجلسات")}</h3></div>${recent.length ? `<div class="list">${recent.map((s) => { const k = S.tasks[s.taskId]; return `<div class="srow"><span class="grow">${k ? esc(k.title) : s.kind === 'timer' ? L('تايمر') : L('تركيز')}${s.partial ? L(' <span class="s">(اتقطعت)</span>') : ''}<br><span class="s">${dueLabel(s.day)} · ${clock(s.start)}</span></span><b class="num">${s.minutes} ${L("د")}</b></div>`; }).join('')}</div>` : L('<div class="card empty">ابدأ أول جلسة تركيز وهتلاقيها هنا.</div>')}</div>`;
 }
 
 const navCur = (v) => view === v || (v === 'projects' && view === 'project');
@@ -1168,15 +1184,15 @@ function railHtml() {
   const ps = projects().filter(openProj);
   const grp = (title, arr) => arr.length ? `<div class="rp"><div class="eyebrow">${title}</div>${arr.map((p) => `<button data-act="open-project" data-id="${esc(p.id)}" ${view === 'project' && projId === p.id ? 'aria-current="page"' : ''}><i class="pdot" style="background:${esc(p.color)}"></i><span>${esc(p.name)}</span><span class="num sub">${open.filter((t) => t.projectId === p.id).length || ''}</span></button>`).join('')}</div>` : '';
   return `<button class="btn primary add" data-act="fab">${I.plus} ${fabLabel()}</button>
-    ${nv('tasks', I.tasks, 'المهام', n || '')}${nv('projects', I.folder, 'المشاريع')}${nv('timer', I.timer, 'التايمر')}${nv('habits', I.habit, 'العادات', hLeft || '')}${nv('notes', I.note, 'الملاحظات')}${nv('stats', I.chart, 'الإحصائيات')}
-    ${grp('جرافيكوو', ps.filter(isG))}${grp(workLabel(), ps.filter((p) => !isG(p) && p.area === 'work'))}${grp(areaName('life'), ps.filter((p) => !isG(p) && p.area === 'life'))}
-    <div class="kbd"><kbd>Space</kbd> شغّل/وقّف التايمر<br><kbd>N</kbd> ${fabLabel()}</div>`;
+    ${nv('tasks', I.tasks, L('المهام'), n || '')}${nv('projects', I.folder, L('المشاريع'))}${nv('timer', I.timer, L('التايمر'))}${nv('habits', I.habit, L('العادات'), hLeft || '')}${nv('notes', I.note, L('الملاحظات'))}${nv('stats', I.chart, L('الإحصائيات'))}
+    ${grp(L('جرافيكوو'), ps.filter(isG))}${grp(workLabel(), ps.filter((p) => !isG(p) && p.area === 'work'))}${grp(areaName('life'), ps.filter((p) => !isG(p) && p.area === 'life'))}
+    <div class="kbd"><kbd>Space</kbd> ${L("شغّل/وقّف التايمر")}<br><kbd>N</kbd> ${fabLabel()}</div>`;
 }
 function navHtml() {
   const b = (v, ic, l) => `<button data-act="nav" data-v="${v}" ${navCur(v) ? 'aria-current="page"' : ''}>${ic}<span>${l}</span></button>`;
-  return `${b('tasks', I.tasks, 'المهام')}${b('projects', I.folder, 'المشاريع')}${b('timer', I.timer, 'التايمر')}${b('habits', I.habit, 'العادات')}${b('notes', I.note, 'الملاحظات')}`;
+  return `${b('tasks', I.tasks, L('المهام'))}${b('projects', I.folder, L('المشاريع'))}${b('timer', I.timer, L('التايمر'))}${b('habits', I.habit, L('العادات'))}${b('notes', I.note, L('الملاحظات'))}`;
 }
-const fabLabel = () => view === 'projects' ? 'مشروع جديد' : view === 'habits' ? 'عادة جديدة' : view === 'notes' ? 'ملاحظة جديدة' : view === 'project' ? 'خطوة جديدة' : 'مهمة جديدة';
+const fabLabel = () => view === 'projects' ? L('مشروع جديد') : view === 'habits' ? L('عادة جديدة') : view === 'notes' ? L('ملاحظة جديدة') : view === 'project' ? L('خطوة جديدة') : L('مهمة جديدة');
 function fabAction() {
   if (view === 'projects') return projectSheet(null);
   if (view === 'habits') return habitSheet(null);
@@ -1185,16 +1201,16 @@ function fabAction() {
 }
 function miniHtml() {
   const t = T(), task = S.tasks[t.taskId];
-  return `${ringSvg()}<div class="grow"><div class="time" data-tm="time">${fmt(remaining())}</div><div class="tt">${phaseName()}${task ? ' · ' + esc(task.title) : ''}</div></div><button class="cb" data-act="toggle-timer" data-tm="toggle" aria-label="ابدأ">${I.play}</button>`;
+  return `${ringSvg()}<div class="grow"><div class="time" data-tm="time">${fmt(remaining())}</div><div class="tt">${phaseName()}${task ? ' · ' + esc(task.title) : ''}</div></div><button class="cb" data-act="toggle-timer" data-tm="toggle" aria-label="${L("ابدأ")}">${I.play}</button>`;
 }
 function widgetHtml() {
   const t = T(), task = S.tasks[t.taskId], td = dkey();
   const list = tasks().filter((k) => !k.done && k.due && k.due <= td).sort(sortTasks);
-  return `<div class="wg"><div class="wg-top"><div class="ring-wrap">${ringSvg()}</div><div class="grow"><div class="ph">${phaseName()}</div><div class="time" data-tm="time">${fmt(remaining())}</div><div class="tt">${task ? esc(task.title) : 'من غير مهمة'}</div>
-      <div class="wg-btns"><button class="main" data-act="toggle-timer" data-tm="toggle" aria-label="ابدأ">${I.play}</button><button data-act="extend" data-v="5"><span dir="ltr">+5</span></button><button data-act="skip" aria-label="تخطي">${I.skip}</button><button data-act="reset" aria-label="من الأول">${I.reset}</button></div></div></div>
+  return `<div class="wg"><div class="wg-top"><div class="ring-wrap">${ringSvg()}</div><div class="grow"><div class="ph">${phaseName()}</div><div class="time" data-tm="time">${fmt(remaining())}</div><div class="tt">${task ? esc(task.title) : L('من غير مهمة')}</div>
+      <div class="wg-btns"><button class="main" data-act="toggle-timer" data-tm="toggle" aria-label="${L("ابدأ")}">${I.play}</button><button data-act="extend" data-v="5"><span dir="ltr">+5</span></button><button data-act="skip" aria-label="${L("تخطي")}">${I.skip}</button><button data-act="reset" aria-label="${L("من الأول")}">${I.reset}</button></div></div></div>
     ${habitPills(td).replace(/<div class="sec-head">[\s\S]*?<\/div>/, '')}
-    ${quickAdd('مهمة للنهارده…', 'wqa')}
-    ${list.length ? `<div class="list">${list.slice(0, 6).map((k) => taskRow(k)).join('')}</div>${list.length > 6 ? `<div class="more">و${list.length - 6} مهام كمان</div>` : ''}` : '<div class="card empty" style="padding:14px">مفيش مهام النهارده 👌</div>'}</div>`;
+    ${quickAdd(L('مهمة للنهارده…'), 'wqa')}
+    ${list.length ? `<div class="list">${list.slice(0, 6).map((k) => taskRow(k)).join('')}</div>${list.length > 6 ? `<div class="more">${L("و")}${list.length - 6} ${L("مهام كمان")}</div>` : ''}` : L('<div class="card empty" style="padding:14px">مفيش مهام النهارده 👌</div>')}</div>`;
 }
 
 const docs = () => [document, ...(pipWin && !pipWin.closed ? [pipWin.document] : [])];
@@ -1203,7 +1219,7 @@ function renderTimerBits() {
   for (const d of docs()) {
     d.querySelectorAll('[data-tm="time"]').forEach((e) => { if (e.textContent !== txt) e.textContent = txt; });
     d.querySelectorAll('[data-tm="ring"]').forEach((c) => { const L = 2 * Math.PI * 88; c.style.strokeDasharray = L; c.style.strokeDashoffset = L * p; });
-    d.querySelectorAll('[data-tm="toggle"]').forEach((b) => { if (b.dataset.st !== st) { b.dataset.st = st; b.innerHTML = t.running ? I.pause : I.play; b.setAttribute('aria-label', t.running ? 'وقّف' : 'ابدأ'); } });
+    d.querySelectorAll('[data-tm="toggle"]').forEach((b) => { if (b.dataset.st !== st) { b.dataset.st = st; b.innerHTML = t.running ? I.pause : I.play; b.setAttribute('aria-label', t.running ? L('وقّف') : L('ابدأ')); } });
   }
   document.title = t.running || t.startedAt ? `${txt} · ${phaseName(t)}` : 'Focus';
   if (vpip) drawVpip();
@@ -1213,17 +1229,21 @@ function applyTheme() {
   if (th === 'auto') root.removeAttribute('data-theme'); else root.dataset.theme = th;
   if (pipWin && !pipWin.closed) { const r = pipWin.document.documentElement; if (th === 'auto') r.removeAttribute('data-theme'); else r.dataset.theme = th; }
   if (CFG.themes) applyAccent();
+  else { const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = isDarkMode() ? '#000000' : '#FFFFFF'; }
+  try { localStorage.setItem('focus.mode', isDarkMode() ? 'dark' : 'light'); } catch (e) {}
 }
 /* ---------- colours & styles (public edition) ---------- */
-const ACCENTS = [['#EE2E24', 'أحمر'], ['#2F6FDE', 'أزرق'], ['#1D9A55', 'أخضر'], ['#7B4FD6', 'بنفسجي'], ['#F07A1A', 'برتقالي'], ['#0E9F9A', 'تركواز'], ['#D9417A', 'وردي'], ['#4A4A4F', 'رمادي']];
-const BARS = [['dark', 'غامق'], ['accent', 'ملوّن'], ['light', 'فاتح']];
+const ACCENTS = [['#EE2E24', L('أحمر')], ['#2F6FDE', L('أزرق')], ['#1D9A55', L('أخضر')], ['#7B4FD6', L('بنفسجي')], ['#F07A1A', L('برتقالي')], ['#0E9F9A', L('تركواز')], ['#D9417A', L('وردي')], ['#4A4A4F', L('رمادي')]];
+const BARS = [['auto', L('تلقائي')], ['dark', L('غامق')], ['accent', L('ملوّن')], ['light', L('فاتح')]];
+const ICON_SETS = ['#EE2E24', '#2F6FDE', '#1D9A55', '#7B4FD6', '#F07A1A', '#0E9F9A', '#D9417A', '#4A4A4F'];
+const nearestSet = (hex) => { const c = hex2rgb(hex); let best = ICON_SETS[0], bd = 1e9; for (const h of ICON_SETS) { const d = hex2rgb(h).reduce((a, v, i) => a + (v - c[i]) ** 2, 0); if (d < bd) { bd = d; best = h; } } return best.slice(1).toLowerCase(); };
 const hex2rgb = (h) => { h = String(h).replace('#', ''); if (h.length === 3) h = h.split('').map((c) => c + c).join(''); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) || 0); };
 const rgb2hex = (a) => '#' + a.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
 const mixHex = (a, b, t) => { const x = hex2rgb(a), y = hex2rgb(b); return rgb2hex(x.map((v, i) => v + (y[i] - v) * t)); };
 const isDarkMode = () => S.dev.theme === 'dark' || (S.dev.theme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
 function applyAccent() {
   const docsR = [document.documentElement, ...(pipWin && !pipWin.closed ? [pipWin.document.documentElement] : [])];
-  const acc = /^#[0-9a-f]{6}$/i.test(S.pref.accent || '') ? S.pref.accent : '#EE2E24', dk = isDarkMode(), [R, G, B] = hex2rgb(acc), bar = S.pref.bar || 'dark';
+  const acc = /^#[0-9a-f]{6}$/i.test(S.pref.accent || '') ? S.pref.accent : '#EE2E24', dk = isDarkMode(), [R, G, B] = hex2rgb(acc), bar = S.pref.bar || 'auto';
   const v = {
     '--red': dk ? mixHex(acc, '#ffffff', 0.08) : acc,
     '--red-ink': dk ? mixHex(acc, '#ffffff', 0.4) : mixHex(acc, '#000000', 0.18),
@@ -1231,25 +1251,34 @@ function applyAccent() {
     '--glow': `rgba(${R},${G},${B},.38)`,
   };
   if (bar === 'accent') Object.assign(v, { '--bar': dk ? mixHex(acc, '#000000', 0.35) : acc, '--bar-ink': '#ffffff', '--bar-muted': 'rgba(255,255,255,.78)', '--bar-2': 'rgba(255,255,255,.16)', '--bar-line': 'rgba(255,255,255,.28)', '--panel': '' });
-  else if (bar === 'light') Object.assign(v, { '--bar': 'var(--surface)', '--bar-ink': 'var(--ink)', '--bar-muted': 'var(--muted)', '--bar-2': 'var(--surface-2)', '--bar-line': 'var(--line)', '--panel': '#141414' });
+  else if (bar === 'light') Object.assign(v, { '--bar': 'var(--surface)', '--bar-ink': 'var(--ink)', '--bar-muted': 'var(--muted)', '--bar-2': 'var(--surface-2)', '--bar-line': 'var(--line)', '--panel': '' });
+  else if (bar === 'dark') Object.assign(v, dk ? { '--bar': '#000000', '--bar-ink': '#FFFFFF', '--bar-muted': '#8A8A8E', '--bar-2': '#1C1C1C', '--bar-line': '#333', '--panel': '' } : { '--bar': '#141414', '--bar-ink': '#FFFFFF', '--bar-muted': '#9A9A9E', '--bar-2': '#222222', '--bar-line': '#333', '--panel': '' });
   else Object.assign(v, { '--bar': '', '--bar-ink': '', '--bar-muted': '', '--bar-2': '', '--bar-line': '', '--panel': '' });
   for (const r of docsR) for (const [k, val] of Object.entries(v)) { if (val) r.style.setProperty(k, val); else r.style.removeProperty(k); }
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = bar === 'accent' ? (dk ? mixHex(acc, '#000000', 0.35) : acc) : bar === 'light' ? (dk ? '#1A1A1A' : '#FFFFFF') : (dk ? '#000000' : '#141414');
+  if (meta) meta.content = bar === 'accent' ? (dk ? mixHex(acc, '#000000', 0.35) : acc) : bar === 'light' ? (dk ? '#1A1A1A' : '#FFFFFF') : bar === 'dark' ? (dk ? '#000000' : '#141414') : (dk ? '#000000' : '#FFFFFF');
+  if (CFG.iconSets) setIcons(nearestSet(acc));
+}
+function setIcons(h) {
+  const set = (sel, href) => { const el = document.querySelector(sel); if (el && el.getAttribute('href') !== href) el.setAttribute('href', href); };
+  set('link[rel="manifest"]', `manifest-${h}.webmanifest`);
+  set('link[rel="apple-touch-icon"]', `icons/${h}/apple-180.png`);
+  set('link[rel="icon"]', `icons/${h}/favicon-64.png`);
 }
 function themeControls() {
-  const acc = S.pref.accent || '#EE2E24', bar = S.pref.bar || 'dark', known = ACCENTS.some(([c]) => c.toLowerCase() === acc.toLowerCase());
-  const prev = (b) => b === 'accent' ? `background:${acc}` : b === 'light' ? 'background:var(--surface)' : 'background:#141414';
-  return `<div class="fld"><span>اللون الأساسي</span><div class="swatches" data-grp="accent">${ACCENTS.map(([c, l]) => `<button type="button" class="sw" data-act="set-accent" data-v="${c}" aria-pressed="${acc.toLowerCase() === c.toLowerCase()}" style="background:${c}" aria-label="${l}" title="${l}"></button>`).join('')}<label class="sw pick" aria-pressed="${!known}" title="لون من اختيارك"><input type="color" id="f-accent" value="${esc(acc)}" aria-label="لون من اختيارك"></label></div></div>
-    <div class="fld"><span>الشريط اللي فوق</span><div class="styles" data-grp="bar">${BARS.map(([b, l]) => `<button type="button" data-act="set-bar" data-v="${b}" aria-pressed="${bar === b}"><i style="${prev(b)}"></i>${l}</button>`).join('')}</div></div>`;
+  const acc = S.pref.accent || '#EE2E24', known = ACCENTS.some(([c]) => c.toLowerCase() === acc.toLowerCase());
+  const prev = (b) => b === 'accent' ? `background:${acc}` : b === 'light' ? 'background:var(--surface)' : b === 'auto' ? 'background:linear-gradient(90deg,#141414 50%,#ffffff 50%)' : 'background:#141414';
+  const bar = S.pref.bar || 'auto';
+  return `<div class="fld"><span>${L("اللون الأساسي")}</span><div class="swatches" data-grp="accent">${ACCENTS.map(([c, l]) => `<button type="button" class="sw" data-act="set-accent" data-v="${c}" aria-pressed="${acc.toLowerCase() === c.toLowerCase()}" style="background:${c}" aria-label="${l}" title="${l}"></button>`).join('')}<label class="sw pick" aria-pressed="${!known}" title="${L("لون من اختيارك")}"><input type="color" id="f-accent" value="${esc(acc)}" aria-label="${L("لون من اختيارك")}"></label></div></div>
+    <div class="fld"><span>${L("الشريط اللي فوق")}</span><div class="styles" data-grp="bar">${BARS.map(([b, l]) => `<button type="button" data-act="set-bar" data-v="${b}" aria-pressed="${bar === b}"><i style="${prev(b)}"></i>${l}</button>`).join('')}</div></div>`;
 }
 function profileControls() {
   const p = S.pref;
-  return `<div class="block"><h3>بياناتك وشغلك</h3><form class="card" data-form="profile">
-      <label class="fld"><span>اسمك (بيظهر في التحية)</span><input id="f-uname" class="inp" value="${esc(p.userName || '')}" placeholder="اختياري" autocomplete="off"></label>
-      <div class="row"><label class="fld grow"><span>اسم قسم الشغل</span><input id="f-awork" class="inp" value="${esc(areaName('work'))}" autocomplete="off"></label><label class="fld grow"><span>اسم القسم الشخصي</span><input id="f-alife" class="inp" value="${esc(areaName('life'))}" autocomplete="off"></label></div>
-      <button class="btn primary">احفظ</button></form>
-    <button class="btn ghost" data-act="onboard" data-v="add">${I.plus} ضيف مشاريع من قالب شغل</button></div>`;
+  return `<div class="block"><h3>${L("بياناتك وشغلك")}</h3><form class="card" data-form="profile">
+      <label class="fld"><span>${L("اسمك (بيظهر في التحية)")}</span><input id="f-uname" class="inp" value="${esc(p.userName || '')}" placeholder="${L("اختياري")}" autocomplete="off"></label>
+      <div class="row"><label class="fld grow"><span>${L("اسم قسم الشغل")}</span><input id="f-awork" class="inp" value="${esc(areaName('work'))}" autocomplete="off"></label><label class="fld grow"><span>${L("اسم القسم الشخصي")}</span><input id="f-alife" class="inp" value="${esc(areaName('life'))}" autocomplete="off"></label></div>
+      <button class="btn primary">${L("احفظ")}</button></form>
+    <button class="btn ghost" data-act="onboard" data-v="add">${I.plus} ${L("ضيف مشاريع من قالب شغل")}</button></div>`;
 }
 function render() {
   applyTheme(); setSyncState(syncing ? 'busy' : S.dev.lastSync ? 'ok' : 'off');
@@ -1258,6 +1287,7 @@ function render() {
   const wide = isWide();
   if (!VIEWS.includes(view)) view = 'tasks';
   $('#main').innerHTML = view === 'tasks' ? viewTasks() : view === 'projects' ? viewProjects() : view === 'project' ? viewProject() : view === 'stats' ? viewStats() : view === 'habits' ? viewHabits() : view === 'notes' ? viewNotes() : viewTimer();
+  $('#main').querySelectorAll('input:not([dir]), textarea:not([dir])').forEach((e) => { e.dir = 'auto'; });
   $('#layout').classList.toggle('v-full', view === 'timer');
   $('#rail').innerHTML = wide ? railHtml() : '';
   $('#dock').innerHTML = wide && view !== 'timer' ? timerPanel('dock') : '';
@@ -1278,7 +1308,7 @@ function render() {
 let toastT = null, undoFn = null;
 function toast(msg, undo) {
   const el = $('#toast'); if (WIDGET_MODE) return;
-  el.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button data-act="undo">تراجع</button>' : ''}`;
+  el.innerHTML = `<span>${esc(msg)}</span>${undo ? L('<button data-act="undo">تراجع</button>') : ''}`;
   el.hidden = false; undoFn = undo || null; clearTimeout(toastT);
   toastT = setTimeout(() => { el.hidden = true; undoFn = null; }, undo ? 5000 : 2600);
 }
@@ -1305,15 +1335,15 @@ function toggleTask(id) {
     t.history = [...(t.history || []).filter((d) => d !== td), td].slice(-120);
     t.due = nextDue(t); touch('task', t);
     kids.forEach((k) => { if (k.done) { k.done = false; k.doneAt = null; touch('task', k); } });
-    toast(`عاش! المرة الجاية ${dueLabel(t.due)}`, () => restore(snap));
+    toast(`${L("عاش! المرة الجاية")} ${dueLabel(t.due)}`, () => restore(snap));
   } else {
     t.done = !t.done; t.doneAt = t.done ? now() : null; touch('task', t);
     if (t.done) {
       const openKids = kids.filter((k) => !k.done);
       openKids.forEach((k) => { k.done = true; k.doneAt = now(); touch('task', k); });
-      toast(openKids.length ? `خلصت ✓ ومعاها ${openKids.length} مهام صغيرة` : 'خلصت ✓', () => restore(snap));
+      toast(openKids.length ? `${L("خلصت")} ✓ ${L("ومعاها")} ${openKids.length} ${L("مهام صغيرة")}` : L('خلصت ✓'), () => restore(snap));
       const par = S.tasks[t.parentId];
-      if (par && !par.done && kidsOf(par.id).every((k) => k.done)) setTimeout(() => toast(`كل مهام «${par.title}» خلصت`, null), 1800);
+      if (par && !par.done && kidsOf(par.id).every((k) => k.done)) setTimeout(() => toast(`${L("كل مهام «")}${par.title}${L("» خلصت")}`, null), 1800);
     }
   }
   if (t.done && T().taskId === id && !T().running) { T().taskId = null; touch('timer', T(), true); }
@@ -1340,9 +1370,10 @@ function openSheet(title, body, foot, cls = '') {
   onSheetClose = null; $('#sheets').innerHTML = '';
   const w = document.createElement('div');
   w.className = 'sheet-wrap';
-  w.innerHTML = `<div class="sheet ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sh-head"><h2>${esc(title)}</h2><button class="icon-btn" data-act="close-sheet" aria-label="اقفل">${I.x}</button></div><div class="sh-body">${body}</div>${foot ? `<div class="sh-foot">${foot}</div>` : ''}</div>`;
+  w.innerHTML = `<div class="sheet ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sh-head"><h2>${esc(title)}</h2><button class="icon-btn" data-act="close-sheet" aria-label="${L("اقفل")}">${I.x}</button></div><div class="sh-body">${body}</div>${foot ? `<div class="sh-foot">${foot}</div>` : ''}</div>`;
   w.addEventListener('mousedown', (e) => { if (e.target === w) closeSheet(); });
   $('#sheets').appendChild(w);
+  w.querySelectorAll('input:not([dir]):not([type=color]):not([type=date]):not([type=number]), textarea:not([dir])').forEach((e) => { e.dir = 'auto'; });
   return w;
 }
 function closeSheet() { const f = onSheetClose; onSheetClose = null; if (f) f(); $('#sheets').innerHTML = ''; D = null; }
@@ -1350,49 +1381,50 @@ const sheetOpen = () => !!$('#sheets').firstChild;
 function projOptions(sel) {
   const ps = projects().filter((p) => openProj(p) || p.id === sel);
   const grp = (label, arr) => arr.length ? `<optgroup label="${label}">${arr.map((p) => `<option value="${esc(p.id)}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</optgroup>` : '';
-  return `<option value="">من غير مشروع</option>${grp('جرافيكوو', ps.filter(isG))}${grp(workLabel(), ps.filter((p) => !isG(p) && p.area === 'work'))}${grp(areaName('life'), ps.filter((p) => !isG(p) && p.area === 'life'))}`;
+  return `<option value="">${L("من غير مشروع")}</option>${grp(L('جرافيكوو'), ps.filter(isG))}${grp(workLabel(), ps.filter((p) => !isG(p) && p.area === 'work'))}${grp(areaName('life'), ps.filter((p) => !isG(p) && p.area === 'life'))}`;
 }
 function parentOptions(sel, selfId) {
   const bad = new Set([selfId]); if (selfId) kidsOf(selfId).forEach((k) => bad.add(k.id));
   const ps = tasks().filter((t) => !t.done && !t.parentId && !bad.has(t.id)).sort(sortTasks);
-  return `<option value="">لأ — مهمة لوحدها</option>${ps.map((t) => `<option value="${esc(t.id)}" ${t.id === sel ? 'selected' : ''}>${esc(t.title)}</option>`).join('')}`;
+  return `<option value="">${L("لأ — مهمة لوحدها")}</option>${ps.map((t) => `<option value="${esc(t.id)}" ${t.id === sel ? 'selected' : ''}>${esc(t.title)}</option>`).join('')}`;
 }
 function stageChips() {
   const p = S.projects[D.projectId];
   if (!p) return '';
-  return `<div class="chips wrap" data-grp="stage">${chip('d-stage', '', 'عامة', D.stage == null)}${stagesOf(p).map((s, k) => chip('d-stage', k, esc(s), D.stage === k)).join('')}</div>`;
+  return `<div class="chips wrap" data-grp="stage">${chip('d-stage', '', L('عامة'), D.stage == null)}${stagesOf(p).map((s, k) => chip('d-stage', k, esc(s), D.stage === k)).join('')}</div>`;
 }
 function kidsHtml() {
   const rows = [...(S.tasks[D.id] ? kidsOf(D.id) : []), ...(D._kids || []).map((k) => ({ ...k, _new: true }))];
-  return rows.map((k) => `<div class="nitem ${k.done ? 'done' : ''}"><button type="button" class="ck" data-act="kid-toggle" data-id="${esc(k.id)}" aria-label="خلصت"><span>${I.check}</span></button><input value="${esc(k.title)}" data-kid="${esc(k.id)}" aria-label="مهمة صغيرة"><button type="button" class="x" data-act="kid-del" data-id="${esc(k.id)}" aria-label="امسح">${I.x}</button></div>`).join('');
+  return rows.map((k) => `<div class="nitem ${k.done ? 'done' : ''}"><button type="button" class="ck" data-act="kid-toggle" data-id="${esc(k.id)}" aria-label="${L("خلصت")}"><span>${I.check}</span></button><input value="${esc(k.title)}" data-kid="${esc(k.id)}" aria-label="${L("مهمة صغيرة")}"><button type="button" class="x" data-act="kid-del" data-id="${esc(k.id)}" aria-label="${L("امسح")}">${I.x}</button></div>`).join('');
 }
 function taskSheet(id, extra) {
   const t = S.tasks[id], isNew = !t, td = dkey();
   D = t ? clone(t) : { id: uid(), title: '', notes: '', projectId: null, due: null, prio: 0, repeat: '', est: 0, done: false, createdAt: now(), ...ctxExtra(), ...(extra || {}) };
   D._kids = [];
   const nextSat = (() => { let n = addDays(td, 1); while (parseD(n).getDay() !== 6) n = addDays(n, 1); return n; })();
-  const dueOpts = [['', 'مفيش'], [td, 'النهارده'], [addDays(td, 1), 'بكرة'], [nextSat, 'السبت الجاي']];
+  const dueOpts = [['', L('مفيش')], [td, L('النهارده')], [addDays(td, 1), L('بكرة')], [nextSat, L('السبت الجاي')]];
   const rep = D.repeat || '', repType = rep.startsWith('days:') ? 'days' : rep, repDays = rep.startsWith('days:') ? rep.slice(5).split(',') : [];
   const body = `
-    <label class="fld"><span>المهمة</span><input id="f-title" class="inp big" value="${esc(D.title)}" placeholder="عاوز تعمل إيه؟" autocomplete="off" enterkeyhint="done"></label>
-    <div class="fld"><span>مهام صغيرة تحتها</span><div class="nitems" id="f-kids">${kidsHtml()}</div><form data-form="kid" class="quick"><input id="f-kid" placeholder="أضف مهمة صغيرة…" autocomplete="off" enterkeyhint="done"><button aria-label="أضف">${I.plus}</button></form></div>
-    <label class="fld"><span>المشروع</span><select id="f-proj" class="inp">${projOptions(D.projectId)}</select></label>
-    <div class="fld" id="f-stage-wrap" ${S.projects[D.projectId] ? '' : 'hidden'}><span>المرحلة</span><div id="f-stage">${stageChips()}</div></div>
-    <div class="fld"><span>الميعاد</span><div class="chips wrap" data-grp="due">${dueOpts.map(([v, l]) => chip('d-due', v, l, (D.due || '') === v)).join('')}<input type="date" id="f-date" class="inp date" value="${D.due || ''}" aria-label="تاريخ"></div></div>
-    <div class="fld"><span>الأهمية</span><div class="chips" data-grp="prio">${[[0, 'عادي'], [1, 'مهم'], [2, 'عاجل']].map(([v, l]) => chip('d-prio', v, l, (D.prio || 0) === v, v === 2 ? 'red' : '')).join('')}</div></div>
-    <div class="fld"><span>التكرار</span><div class="chips wrap" data-grp="rep">${REPS.map(([v, l]) => chip('d-rep', v, l, repType === v)).join('')}</div>
+    <label class="fld"><span>${L("المهمة")}</span><input id="f-title" class="inp big" value="${esc(D.title)}" placeholder="${L("عاوز تعمل إيه؟")}" autocomplete="off" enterkeyhint="done"></label>
+    <div class="fld"><span>${L("مهام صغيرة تحتها")}</span><div class="nitems" id="f-kids">${kidsHtml()}</div><form data-form="kid" class="quick"><input id="f-kid" placeholder="${L("أضف مهمة صغيرة…")}" autocomplete="off" enterkeyhint="done"><button aria-label="${L("أضف")}">${I.plus}</button></form></div>
+    <label class="fld"><span>${L("المشروع")}</span><select id="f-proj" class="inp">${projOptions(D.projectId)}</select></label>
+    <div class="fld" id="f-stage-wrap" ${S.projects[D.projectId] ? '' : 'hidden'}><span>${L("المرحلة")}</span><div id="f-stage">${stageChips()}</div></div>
+    <div class="fld"><span>${L("الميعاد")}</span><div class="chips wrap" data-grp="due">${dueOpts.map(([v, l]) => chip('d-due', v, l, (D.due || '') === v)).join('')}<input type="date" id="f-date" class="inp date" value="${D.due || ''}" aria-label="${L("تاريخ")}"></div></div>
+    <div class="fld"><span>${L("الأهمية")}</span><div class="chips" data-grp="prio">${[[0, L('عادي')], [1, L('مهم')], [2, L('عاجل')]].map(([v, l]) => chip('d-prio', v, l, (D.prio || 0) === v, v === 2 ? 'red' : '')).join('')}</div></div>
+    <div class="fld"><span>${L("التكرار")}</span><div class="chips wrap" data-grp="rep">${REPS.map(([v, l]) => chip('d-rep', v, l, repType === v)).join('')}</div>
       <div class="chips wrap" id="f-days" ${repType === 'days' ? '' : 'hidden'}>${[6, 0, 1, 2, 3, 4, 5].map((d) => chip('d-day', d, DAYS_S[d], repDays.includes(String(d)))).join('')}</div></div>
-    <div class="fld"><span>كام بومودورو محتاجة؟ (تقريبًا)</span><div class="stepper"><button type="button" data-act="d-est" data-v="-1" aria-label="أقل">−</button><b class="num" id="f-est">${D.est || 0}</b><button type="button" data-act="d-est" data-v="1" aria-label="أكتر">+</button></div></div>
-    <label class="fld"><span>تحت مهمة كبيرة؟</span><select id="f-parent" class="inp">${parentOptions(D.parentId, isNew ? null : D.id)}</select></label>
-    <label class="fld"><span>ملاحظات</span><textarea id="f-notes" class="inp" rows="3" placeholder="أي تفاصيل…">${esc(D.notes)}</textarea></label>
-    ${!isNew && pomCount(D.id) ? `<div class="note">اتعمل عليها <b class="num">${pomCount(D.id)}</b> بومودورو كاملة.</div>` : ''}`;
-  const foot = `${!isNew ? `<button class="btn ghost danger" data-act="del-task" aria-label="امسح المهمة">${I.trash}</button>` : ''}<button class="btn ghost" data-act="save-task" data-v="focus">${I.play} احفظ وابدأ</button><button class="btn primary grow" data-act="save-task">احفظ</button>`;
-  openSheet(isNew ? (D.parentId ? 'مهمة صغيرة جديدة' : 'مهمة جديدة') : 'تعديل المهمة', body, foot);
+    <div class="fld"><span>${L("كام بومودورو محتاجة؟ (تقريبًا)")}</span><div class="stepper"><button type="button" data-act="d-est" data-v="-1" aria-label="${L("أقل")}">−</button><b class="num" id="f-est">${D.est || 0}</b><button type="button" data-act="d-est" data-v="1" aria-label="${L("أكتر")}">+</button></div></div>
+    <label class="fld"><span>${L("تحت مهمة كبيرة؟")}</span><select id="f-parent" class="inp">${parentOptions(D.parentId, isNew ? null : D.id)}</select></label>
+    <label class="fld"><span>${L("ملاحظات")}</span><textarea id="f-notes" class="inp" rows="3" placeholder="${L("أي تفاصيل…")}">${esc(D.notes)}</textarea></label>
+    ${!isNew && pomCount(D.id) ? `<div class="note">${L("اتعمل عليها")} <b class="num">${pomCount(D.id)}</b> ${L("بومودورو كاملة.")}</div>` : ''}`;
+  const foot = `${!isNew ? `<button class="btn ghost danger" data-act="del-task" aria-label="${L("امسح المهمة")}">${I.trash}</button>` : ''}<button class="btn ghost" data-act="save-task" data-v="focus">${I.play} ${L("احفظ وابدأ")}</button><button class="btn primary grow" data-act="save-task">${L("احفظ")}</button>`;
+  openSheet(isNew ? (D.parentId ? L('مهمة صغيرة جديدة') : L('مهمة جديدة')) : L('تعديل المهمة'), body, foot);
+  addTranslateBtn();
   if (isNew || !matchMedia('(pointer:coarse)').matches) setTimeout(() => $('#f-title')?.focus(), 60);
 }
 function saveTask(andFocus) {
   D.title = $('#f-title').value.trim(); D.notes = $('#f-notes').value.trim(); D.projectId = $('#f-proj').value || null; D.parentId = $('#f-parent').value || null;
-  if (!D.title) { $('#f-title').focus(); toast('اكتب اسم المهمة'); return; }
+  if (!D.title) { $('#f-title').focus(); toast(L('اكتب اسم المهمة')); return; }
   const pend = $('#f-kid').value.trim(); if (pend) D._kids.push({ id: uid(), title: pend, done: false });
   if (D.repeat === 'days:') D.repeat = '';
   if (D.repeat && !D.due) D.due = dkey();
@@ -1412,19 +1444,20 @@ function projectSheet(id, area) {
   const p = S.projects[id], isNew = !p;
   D = p ? clone(p) : { id: uid(), name: '', area: area || 'work', color: COLORS[projects().length % COLORS.length], stages: (DEF_STAGES[area || 'work']).slice(), stage: 0, createdAt: now() };
   const g = isG(D);
-  const body = `${g ? `<div class="note">ده مشروع جاي من ابلكيشن جرافيكوو: الاسم والعميل والمرحلة بيتغيروا من هناك. هنا تقدر تغيّر اللون أو تخفيه.</div>` : `<label class="fld"><span>اسم المشروع</span><input id="f-pname" class="inp big" value="${esc(D.name)}" placeholder="مثلاً: موقع شخصي، مذاكرة، تجديد الشقة" autocomplete="off"></label>
-    <div class="fld"><span>النوع</span><div class="chips" data-grp="area">${chip('p-area', 'work', 'شغل', D.area === 'work')}${chip('p-area', 'life', 'حياة يومية', D.area === 'life')}</div></div>
-    <label class="fld"><span>المراحل (كل مرحلة في سطر)</span><textarea id="f-pstages" class="inp" rows="4">${esc((D.stages || []).join('\n'))}</textarea></label>`}
-    <div class="fld"><span>اللون</span><div class="swatches" data-grp="color">${COLORS.map((c) => `<button type="button" class="sw" data-act="p-color" data-v="${c}" aria-pressed="${D.color === c}" style="background:${c}" aria-label="لون ${c}"></button>`).join('')}</div></div>
-    ${!isNew ? `<div class="list"><div class="toggle"><div class="grow"><b>${g ? 'اخفي من القوايم' : 'أرشفة المشروع'}</b><span>يختفي من القوايم ويفضل محفوظ</span></div><button type="button" class="sw-t" data-act="p-arch" aria-pressed="${!!D.archived}" aria-label="أرشفة"></button></div></div>` : ''}`;
-  const foot = `${!isNew && !g ? `<button class="btn ghost danger" data-act="del-project" aria-label="امسح المشروع">${I.trash}</button>` : ''}<button class="btn primary grow" data-act="save-project">${isNew ? 'أضف المشروع' : 'احفظ'}</button>`;
-  openSheet(isNew ? 'مشروع جديد' : g ? D.name : 'تعديل المشروع', body, foot);
+  const body = `${g ? `<div class="note">${L("ده مشروع جاي من ابلكيشن جرافيكوو: الاسم والعميل والمرحلة بيتغيروا من هناك. هنا تقدر تغيّر اللون أو تخفيه.")}</div>` : `<label class="fld"><span>${L("اسم المشروع")}</span><input id="f-pname" class="inp big" value="${esc(D.name)}" placeholder="${L("مثلاً: موقع شخصي، مذاكرة، تجديد الشقة")}" autocomplete="off"></label>
+    <div class="fld"><span>${L("النوع")}</span><div class="chips" data-grp="area">${chip('p-area', 'work', L('شغل'), D.area === 'work')}${chip('p-area', 'life', L('حياة يومية'), D.area === 'life')}</div></div>
+    <label class="fld"><span>${L("المراحل (كل مرحلة في سطر)")}</span><textarea id="f-pstages" class="inp" rows="4">${esc((D.stages || []).join('\n'))}</textarea></label>`}
+    <div class="fld"><span>${L("اللون")}</span><div class="swatches" data-grp="color">${COLORS.map((c) => `<button type="button" class="sw" data-act="p-color" data-v="${c}" aria-pressed="${D.color === c}" style="background:${c}" aria-label="${L("لون")} ${c}"></button>`).join('')}</div></div>
+    ${!isNew ? `<div class="list"><div class="toggle"><div class="grow"><b>${g ? L('اخفي من القوايم') : L('أرشفة المشروع')}</b><span>${L("يختفي من القوايم ويفضل محفوظ")}</span></div><button type="button" class="sw-t" data-act="p-arch" aria-pressed="${!!D.archived}" aria-label="${L("أرشفة")}"></button></div></div>` : ''}`;
+  const foot = `${!isNew && !g ? `<button class="btn ghost danger" data-act="del-project" aria-label="${L("امسح المشروع")}">${I.trash}</button>` : ''}<button class="btn primary grow" data-act="save-project">${isNew ? L('أضف المشروع') : L('احفظ')}</button>`;
+  openSheet(isNew ? L('مشروع جديد') : g ? D.name : L('تعديل المشروع'), body, foot);
+  addTranslateBtn();
   if (isNew) setTimeout(() => $('#f-pname')?.focus(), 60);
 }
 function saveProject() {
   if (!isG(D)) {
     D.name = $('#f-pname').value.trim();
-    if (!D.name) { $('#f-pname').focus(); toast('اكتب اسم المشروع'); return; }
+    if (!D.name) { $('#f-pname').focus(); toast(L('اكتب اسم المشروع')); return; }
     const st = $('#f-pstages').value.split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 12);
     D.stages = st.length ? st : DEF_STAGES[D.area].slice();
     D.stage = Math.min(D.stage || 0, D.stages.length - 1);
@@ -1443,16 +1476,17 @@ function habitSheet(id) {
   if (!isNew) {
     let start = addDays(td, -7 * 15); while (parseD(start).getDay() !== 6) start = addDays(start, -1);
     const cells = []; for (let d = start; d <= td; d = addDays(d, 1)) { const c = hCount(D, d), tg = D.target || 1; cells.push(`<i class="${c >= tg ? 'on' : c ? 'part' : ''}" title="${d}"></i>`); }
-    heat = `<div class="fld"><span>آخر ٤ شهور · أطول سلسلة ${bestStreak(D)} · مجموع ${Object.keys(D.log || {}).filter((d) => hDone(D, d)).length} يوم</span><div class="card" style="--hc:${hc(D)}"><div class="heat">${cells.join('')}</div></div></div>`;
+    heat = `<div class="fld"><span>${L("آخر ٤ شهور")} · ${L("أطول سلسلة")} ${bestStreak(D)} · ${L("مجموع")} ${Object.keys(D.log || {}).filter((d) => hDone(D, d)).length} ${L("يوم")}</span><div class="card" style="--hc:${hc(D)}"><div class="heat">${cells.join('')}</div></div></div>`;
   }
-  const body = `<label class="fld"><span>العادة</span><input id="f-hname" class="inp big" value="${esc(D.name)}" placeholder="مثلاً: اقرا 10 صفحات، صلاة الفجر، مشي" autocomplete="off"></label>
-    <div class="fld"><span>كام مرة في اليوم؟</span><div class="stepper"><button type="button" data-act="h-target" data-v="-1">−</button><b class="num" id="f-htarget">${D.target || 1}</b><button type="button" data-act="h-target" data-v="1">+</button></div></div>
-    <div class="fld"><span>الأيام</span><div class="chips wrap" id="f-hdays">${chip('h-every', '', 'كل يوم', !D.days.length)}${[6, 0, 1, 2, 3, 4, 5].map((d) => chip('h-day', d, DAYS_S[d], D.days.includes(d))).join('')}</div></div>
-    <div class="fld"><span>اللون</span><div class="swatches" data-grp="color">${HCOLORS.map((c) => `<button type="button" class="sw" data-act="h-color" data-v="${c}" aria-pressed="${D.color === c}" style="background:${c}" aria-label="لون"></button>`).join('')}</div></div>
+  const body = `<label class="fld"><span>${L("العادة")}</span><input id="f-hname" class="inp big" value="${esc(D.name)}" placeholder="${L("مثلاً: اقرا 10 صفحات، صلاة الفجر، مشي")}" autocomplete="off"></label>
+    <div class="fld"><span>${L("كام مرة في اليوم؟")}</span><div class="stepper"><button type="button" data-act="h-target" data-v="-1">−</button><b class="num" id="f-htarget">${D.target || 1}</b><button type="button" data-act="h-target" data-v="1">+</button></div></div>
+    <div class="fld"><span>${L("الأيام")}</span><div class="chips wrap" id="f-hdays">${chip('h-every', '', L('كل يوم'), !D.days.length)}${[6, 0, 1, 2, 3, 4, 5].map((d) => chip('h-day', d, DAYS_S[d], D.days.includes(d))).join('')}</div></div>
+    <div class="fld"><span>${L("اللون")}</span><div class="swatches" data-grp="color">${HCOLORS.map((c) => `<button type="button" class="sw" data-act="h-color" data-v="${c}" aria-pressed="${D.color === c}" style="background:${c}" aria-label="${L("لون")}"></button>`).join('')}</div></div>
     ${heat}
-    ${!isNew ? `<div class="list"><div class="toggle"><div class="grow"><b>وقّف العادة مؤقتًا</b><span>تختفي من النهارده وتفضل محفوظة</span></div><button type="button" class="sw-t" data-act="h-arch" aria-pressed="${!!D.archived}"></button></div></div>` : ''}`;
-  const foot = `${!isNew ? `<button class="btn ghost danger" data-act="del-habit" aria-label="امسح العادة">${I.trash}</button>` : ''}<button class="btn primary grow" data-act="save-habit">${isNew ? 'أضف العادة' : 'احفظ'}</button>`;
-  openSheet(isNew ? 'عادة جديدة' : 'العادة', body, foot);
+    ${!isNew ? `<div class="list"><div class="toggle"><div class="grow"><b>${L("وقّف العادة مؤقتًا")}</b><span>${L("تختفي من النهارده وتفضل محفوظة")}</span></div><button type="button" class="sw-t" data-act="h-arch" aria-pressed="${!!D.archived}"></button></div></div>` : ''}`;
+  const foot = `${!isNew ? `<button class="btn ghost danger" data-act="del-habit" aria-label="${L("امسح العادة")}">${I.trash}</button>` : ''}<button class="btn primary grow" data-act="save-habit">${isNew ? L('أضف العادة') : L('احفظ')}</button>`;
+  openSheet(isNew ? L('عادة جديدة') : L('العادة'), body, foot);
+  addTranslateBtn();
   if (isNew) setTimeout(() => $('#f-hname')?.focus(), 60);
 }
 function bestStreak(h) {
@@ -1463,28 +1497,29 @@ function bestStreak(h) {
 }
 function saveHabit() {
   D.name = $('#f-hname').value.trim();
-  if (!D.name) { $('#f-hname').focus(); toast('اكتب اسم العادة'); return; }
+  if (!D.name) { $('#f-hname').focus(); toast(L('اكتب اسم العادة')); return; }
   const h = S.habits[D.id] ? Object.assign(S.habits[D.id], D) : (S.habits[D.id] = D);
   touch('habit', h); D = null; closeSheet(); render();
 }
 /* notes */
 function noteItemsHtml() {
-  return (D.items || []).map((it) => `<div class="nitem ${it.done ? 'done' : ''}"><button type="button" class="ck" data-act="ni-toggle" data-id="${esc(it.id)}" aria-label="خلصت"><span>${I.check}</span></button><input value="${esc(it.t)}" data-ni="${esc(it.id)}" aria-label="عنصر"><button type="button" class="x" data-act="ni-del" data-id="${esc(it.id)}" aria-label="امسح">${I.x}</button></div>`).join('');
+  return (D.items || []).map((it) => `<div class="nitem ${it.done ? 'done' : ''}"><button type="button" class="ck" data-act="ni-toggle" data-id="${esc(it.id)}" aria-label="${L("خلصت")}"><span>${I.check}</span></button><input value="${esc(it.t)}" data-ni="${esc(it.id)}" aria-label="${L("عنصر")}"><button type="button" class="x" data-act="ni-del" data-id="${esc(it.id)}" aria-label="${L("امسح")}">${I.x}</button></div>`).join('');
 }
 function noteBody() {
   return D.kind === 'list'
-    ? `<div class="nitems" id="n-items">${noteItemsHtml()}</div><form data-form="nitem" class="quick"><input id="n-item" placeholder="عنصر جديد…" autocomplete="off" enterkeyhint="done"><button aria-label="أضف">${I.plus}</button></form>`
-    : `<textarea id="n-body" class="inp plain" rows="9" placeholder="اكتب ملاحظتك…">${esc(D.body)}</textarea>`;
+    ? `<div class="nitems" id="n-items">${noteItemsHtml()}</div><form data-form="nitem" class="quick"><input id="n-item" placeholder="${L("عنصر جديد…")}" autocomplete="off" enterkeyhint="done"><button aria-label="${L("أضف")}">${I.plus}</button></form>`
+    : `<textarea id="n-body" class="inp plain" rows="9" placeholder="${L("اكتب ملاحظتك…")}">${esc(D.body)}</textarea>`;
 }
 function noteSheet(id, opts = {}) {
   const n = S.notes[id], isNew = !n;
   D = n ? clone(n) : { id: uid(), title: '', body: '', items: [], kind: opts.kind || 'text', color: '', pinned: false, projectId: opts.projectId || null, createdAt: now() };
-  const body = `<input id="n-title" class="inp big plain" value="${esc(D.title)}" placeholder="العنوان" autocomplete="off">
+  const body = `<input id="n-title" class="inp big plain" value="${esc(D.title)}" placeholder="${L("العنوان")}" autocomplete="off">
     <div id="n-main">${noteBody()}</div>
-    <div class="fld"><span>اللون</span><div class="swatches" data-grp="ncolor">${NCOLORS.map(([k, c]) => `<button type="button" class="sw" data-act="n-color" data-v="${k}" aria-pressed="${(D.color || '') === k}" style="background:${c}" aria-label="لون"></button>`).join('')}</div></div>
-    <label class="fld"><span>المشروع</span><select id="n-proj" class="inp">${projOptions(D.projectId)}</select></label>`;
-  const foot = `${!isNew ? `<button class="icon-btn" data-act="del-note" aria-label="امسح الملاحظة">${I.trash}</button>` : ''}<button class="icon-btn" data-act="n-kind" aria-label="${D.kind === 'list' ? 'خليها نص' : 'خليها قايمة'}" title="${D.kind === 'list' ? 'نص' : 'قايمة'}">${D.kind === 'list' ? I.text : I.list}</button><button class="icon-btn" data-act="n-pin" aria-pressed="${!!D.pinned}" aria-label="ثبّت">${I.pin}</button><span class="grow"></span><button class="btn primary" data-act="close-sheet">تمام</button>`;
-  openSheet(isNew ? 'ملاحظة جديدة' : 'ملاحظة', body, foot, D.color ? 'nc-' + D.color : '');
+    <div class="fld"><span>${L("اللون")}</span><div class="swatches" data-grp="ncolor">${NCOLORS.map(([k, c]) => `<button type="button" class="sw" data-act="n-color" data-v="${k}" aria-pressed="${(D.color || '') === k}" style="background:${c}" aria-label="${L("لون")}"></button>`).join('')}</div></div>
+    <label class="fld"><span>${L("المشروع")}</span><select id="n-proj" class="inp">${projOptions(D.projectId)}</select></label>`;
+  const foot = `${!isNew ? `<button class="icon-btn" data-act="del-note" aria-label="${L("امسح الملاحظة")}">${I.trash}</button>` : ''}<button class="icon-btn" data-act="n-kind" aria-label="${D.kind === 'list' ? L('خليها نص') : L('خليها قايمة')}" title="${D.kind === 'list' ? L('نص') : L('قايمة')}">${D.kind === 'list' ? I.text : I.list}</button><button class="icon-btn" data-act="n-pin" aria-pressed="${!!D.pinned}" aria-label="${L("ثبّت فوق")}">${I.pin}</button><span class="grow"></span><button class="btn primary" data-act="close-sheet">${L("تمام")}</button>`;
+  openSheet(isNew ? L('ملاحظة جديدة') : L('ملاحظة'), body, foot, D.color ? 'nc-' + D.color : '');
+  addTranslateBtn();
   onSheetClose = saveNote;
   const kind = D.kind;
   if (isNew) setTimeout(() => (kind === 'list' ? $('#n-item') : $('#n-body'))?.focus(), 60);
@@ -1508,16 +1543,16 @@ function saveNote() {
 function pickTaskSheet() {
   const td = dkey(), open = tasks().filter((t) => !t.done).sort((a, b) => ((a.due && a.due <= td) ? 0 : 1) - ((b.due && b.due <= td) ? 0 : 1) || sortTasks(a, b));
   const row = (t) => { const p = S.projects[t.projectId]; return `<button class="pickrow" data-act="set-task" data-id="${esc(t.id)}"><i class="pdot" style="background:${p ? esc(p.color) : 'var(--line)'}"></i><b>${t.parentId ? '↳ ' : ''}${esc(t.title)}</b><span>${t.due ? dueLabel(t.due) : ''}</span></button>`; };
-  openSheet('هتشتغل على إيه؟', `<form class="quick" data-form="pick-new"><input id="f-pick" placeholder="ابحث أو اكتب مهمة جديدة…" autocomplete="off"><button aria-label="أضف">${I.plus}</button></form>
-    <div class="list" id="pick-list">${open.length ? open.map(row).join('') : '<div class="empty">مفيش مهام مفتوحة — اكتب واحدة فوق.</div>'}</div>`);
+  openSheet(L('هتشتغل على إيه؟'), `<form class="quick" data-form="pick-new"><input id="f-pick" placeholder="${L("ابحث أو اكتب مهمة جديدة…")}" autocomplete="off"><button aria-label="${L("أضف")}">${I.plus}</button></form>
+    <div class="list" id="pick-list">${open.length ? open.map(row).join('') : L('<div class="empty">مفيش مهام مفتوحة — اكتب واحدة فوق.</div>')}</div>`);
   setTimeout(() => { const i = $('#f-pick'); if (i && !matchMedia('(pointer:coarse)').matches) i.focus(); }, 60);
 }
 function customSheet(k) {
   const cur = k === 'timer' ? T().timerMin : S.pref[k];
-  const label = { focus: 'مدة التركيز', short: 'مدة الراحة', long: 'الراحة الطويلة', timer: 'مدة التايمر' }[k];
-  openSheet(label, `<form data-form="custom" data-k="${k}" class="block"><label class="fld"><span>بالدقايق (من 1 لـ 600)</span><input id="f-min" class="inp big num" type="number" inputmode="numeric" min="1" max="600" value="${cur}"></label>
+  const label = { focus: L('مدة التركيز'), short: L('مدة الراحة'), long: L('الراحة الطويلة'), timer: L('مدة التايمر') }[k];
+  openSheet(label, `<form data-form="custom" data-k="${k}" class="block"><label class="fld"><span>${L("بالدقايق (من 1 لـ 600)")}</span><input id="f-min" class="inp big num" type="number" inputmode="numeric" min="1" max="600" value="${cur}"></label>
     <div class="chips wrap">${[20, 30, 50, 60, 90, 120].map((v) => `<button type="button" class="chip num" data-act="min-quick" data-v="${v}">${v}</button>`).join('')}</div>
-    <button class="btn primary">تمام</button></form>`);
+    <button class="btn primary">${L("تمام")}</button></form>`);
   setTimeout(() => { const i = $('#f-min'); i?.focus(); i?.select(); }, 60);
 }
 let installEvt = null;
@@ -1525,80 +1560,151 @@ function settingsSheet(focusG) {
   const p = S.pref, d = S.dev;
   const tg = (act, on, title, sub) => `<div class="toggle"><div class="grow"><b>${title}</b>${sub ? `<span>${sub}</span>` : ''}</div><button type="button" class="sw-t" data-act="${act}" aria-pressed="${!!on}" aria-label="${title}"></button></div>`;
   const step = (k, label, v) => `<div class="toggle"><div class="grow"><b>${label}</b></div><div class="stepper"><button type="button" data-act="pref-step" data-k="${k}" data-v="-1">−</button><b class="num">${v}</b><button type="button" data-act="pref-step" data-k="${k}" data-v="1">+</button></div></div>`;
-  const notifState = !('Notification' in window) ? 'الجهاز ده مش بيدعم الإشعارات' : Notification.permission === 'denied' ? 'مقفولة من إعدادات المتصفح' : '';
+  const notifState = !('Notification' in window) ? L('الجهاز ده مش بيدعم الإشعارات') : Notification.permission === 'denied' ? L('مقفولة من إعدادات المتصفح') : '';
   const gCount = projects().filter((x) => isG(x) && openProj(x)).length;
   const body = `
-    <div class="block" id="set-g"><h3>ابلكيشن جرافيكوو</h3>
-      ${d.gToken ? `<div class="card"><div class="row"><span class="gbadge">متربط${d.gName ? ' · ' + esc(d.gName) : ''}</span><span class="grow"></span><span class="sub">${gCount} مشروع مفتوح</span></div>
-        <div class="sub">مشاريع جرافيكوو بتنزل في «المشاريع» لوحدها بمراحلها ومواعيد تسليمها، وبتتحدث كل ما تفتح التطبيق.${d.gLast ? ` آخر تحديث: ${clock(d.gLast)}.` : ''}</div>
-        <div class="row"><button class="btn ghost grow" data-act="g-refresh">${I.sync} حدّث دلوقتي</button><button class="btn ghost danger" data-act="g-off">افصل</button></div></div>`
-      : `<form class="card" data-form="g-login"><div class="sub">ادخل بالـ PIN بتاع ابلكيشن جرافيكوو، والمشاريع هتنزل هنا لوحدها.</div>
+    <div class="block" id="set-g"><h3>${L("ابلكيشن جرافيكوو")}</h3>
+      ${d.gToken ? `<div class="card"><div class="row"><span class="gbadge">${L("متربط")}${d.gName ? ' · ' + esc(d.gName) : ''}</span><span class="grow"></span><span class="sub">${gCount} ${L("مشروع مفتوح")}</span></div>
+        <div class="sub">${L("مشاريع جرافيكوو بتنزل في «المشاريع» لوحدها بمراحلها ومواعيد تسليمها، وبتتحدث كل ما تفتح التطبيق.")}${d.gLast ? ` ${L("آخر تحديث")}: ${clock(d.gLast)}.` : ''}</div>
+        <div class="row"><button class="btn ghost grow" data-act="g-refresh">${I.sync} ${L("حدّث دلوقتي")}</button><button class="btn ghost danger" data-act="g-off">${L("افصل")}</button></div></div>`
+      : `<form class="card" data-form="g-login"><div class="sub">${L("ادخل بالـ")} PIN ${L("بتاع ابلكيشن جرافيكوو، والمشاريع هتنزل هنا لوحدها.")}</div>
         <label class="fld"><span>PIN</span><input id="f-gpin" class="inp num" type="password" inputmode="numeric" autocomplete="off" dir="ltr"></label>
-        <details><summary class="sub">رابط السيرفر (متغيرش غير لو عملت نشر جديد)</summary><input id="f-gurl" class="inp num" dir="ltr" value="${esc(d.gUrl || G_DEFAULT_URL)}" style="margin-top:8px"></details>
-        <button class="btn primary">اربط</button></form>`}</div>
-    <div class="block"><h3>الشكل</h3><div class="chips">${[['auto', 'تلقائي'], ['light', 'فاتح'], ['dark', 'غامق']].map(([v, l]) => chip('set-theme', v, l, d.theme === v)).join('')}</div>${CFG.themes ? themeControls() : ''}</div>
+        <details><summary class="sub">${L("رابط السيرفر (متغيرش غير لو عملت نشر جديد)")}</summary><input id="f-gurl" class="inp num" dir="ltr" value="${esc(d.gUrl || G_DEFAULT_URL)}" style="margin-top:8px"></details>
+        <button class="btn primary">${L("اربط")}</button></form>`}</div>
+    <div class="block"><h3>${L("الشكل")}</h3><div class="chips">${[['auto', L('تلقائي')], ['light', L('فاتح')], ['dark', L('غامق')]].map(([v, l]) => chip('set-theme', v, l, d.theme === v)).join('')}</div>${CFG.themes ? themeControls() : ''}</div>
+    <div class="block"><h3>${L('اللغة')}</h3><div class="chips">${[['ar', 'العربية'], ['en', 'English']].map(([v, l]) => chip('set-lang', v, l, LANG === v)).join('')}</div><div class="sub">${L('بيتغير كلام التطبيق بس — اللي انت كاتبه بيفضل زي ما هو.')}</div></div>
     ${CFG.onboarding ? profileControls() : ''}
-    <div class="block"><h3>البومودورو</h3><div class="list">${step('focus', 'التركيز (دقيقة)', p.focus)}${step('short', 'الراحة القصيرة', p.short)}${step('long', 'الراحة الطويلة', p.long)}${step('longEvery', 'راحة طويلة كل كام جلسة', p.longEvery)}
-      ${tg('pref-autoBreak', p.autoBreak, 'ابدأ الراحة لوحدها', 'أول ما التركيز يخلص')}${tg('pref-autoFocus', p.autoFocus, 'ابدأ التركيز لوحده', 'أول ما الراحة تخلص')}</div></div>
-    <div class="block"><h3>التنبيهات</h3><div class="list">${tg('dev-sound', d.sound, 'صوت لما التايمر يخلص')}${tg('dev-vibrate', d.vibrate, 'اهتزاز', 'للموبايل')}${tg('dev-notify', d.notify && !notifState, 'إشعارات', notifState || 'لما التايمر يخلص والتطبيق في الخلفية')}${tg('dev-wake', d.wake, 'خلّي الشاشة منورة', 'وقت ما التايمر شغال')}
-      <div class="toggle"><div class="grow"><b>جرّب الصوت</b></div><button class="btn ghost small" data-act="test-sound">${I.bell} تشغيل</button></div></div></div>
-    <div class="block"><h3>المزامنة بين الموبايل والآيباد والكمبيوتر</h3>
-      <form class="card" data-form="sync"><label class="fld"><span>رابط المزامنة (Google Apps Script)</span><input id="f-surl" class="inp num" dir="ltr" value="${esc(d.syncUrl)}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
-      <label class="fld"><span>كلمة السر</span><input id="f-skey" class="inp" dir="ltr" type="password" value="${esc(d.syncKey)}" autocomplete="off"></label>
-      <div class="row"><button class="btn primary grow">${d.syncUrl ? 'احفظ وزامن' : 'اربط'}</button>${d.syncUrl ? `<button type="button" class="btn ghost" data-act="sync-off">افصل</button>` : ''}</div>
-      ${d.syncUrl ? `<button type="button" class="btn ghost" data-act="sync-link">انسخ رابط الربط لجهاز تاني</button>` : ''}
-      <div class="sub">${d.lastSync ? `آخر مزامنة: ${dueLabel(dkey(new Date(d.lastSync)))} ${clock(d.lastSync)}` : 'من غير مزامنة كل جهاز بيحفظ بياناته لوحده.'}</div></form></div>
-    <div class="block"><h3>نسخة احتياطية</h3><div class="row"><button class="btn ghost grow" data-act="export">${I.down} حمّل نسخة</button><button class="btn ghost grow" data-act="import">${I.up} رجّع نسخة</button></div></div>
-    <div class="block"><h3>التطبيق</h3><div class="list">
-      ${installEvt ? `<div class="toggle"><div class="grow"><b>ثبّت Focus على الجهاز</b><span>يفتح لوحده زي أي ابلكيشن</span></div><button class="btn primary small" data-act="install">ثبّت</button></div>` : ''}
-      <div class="toggle"><div class="grow"><b>الويدجت العائم</b><span>تايمر صغير فوق كل الشبابيك + مهام وعادات النهارده</span></div><button class="btn ghost small" data-act="widget">${I.widget} افتح</button></div></div>
-      <div class="note">على الآيفون/الآيباد: Safari ← زرار المشاركة ← <b>Add to Home Screen</b>. على أندرويد: Chrome ← ⋮ ← <b>Install app</b>. على الكمبيوتر: أيقونة التثبيت في شريط العنوان.</div></div>`;
-  openSheet('الإعدادات', body);
+    <div class="block"><h3>${L("البومودورو")}</h3><div class="list">${step('focus', L('التركيز (دقيقة)'), p.focus)}${step('short', L('الراحة القصيرة'), p.short)}${step('long', L('الراحة الطويلة'), p.long)}${step('longEvery', L('راحة طويلة كل كام جلسة'), p.longEvery)}
+      ${tg('pref-autoBreak', p.autoBreak, L('ابدأ الراحة لوحدها'), L('أول ما التركيز يخلص'))}${tg('pref-autoFocus', p.autoFocus, L('ابدأ التركيز لوحده'), L('أول ما الراحة تخلص'))}</div></div>
+    <div class="block"><h3>${L("التنبيهات")}</h3><div class="list">${tg('dev-sound', d.sound, L('صوت لما التايمر يخلص'))}${tg('dev-vibrate', d.vibrate, L('اهتزاز'), L('للموبايل'))}${tg('dev-notify', d.notify && !notifState, L('إشعارات'), notifState || L('لما التايمر يخلص والتطبيق في الخلفية'))}${tg('dev-wake', d.wake, L('خلّي الشاشة منورة'), L('وقت ما التايمر شغال'))}
+      <div class="toggle"><div class="grow"><b>${L("جرّب الصوت")}</b></div><button class="btn ghost small" data-act="test-sound">${I.bell} ${L("تشغيل")}</button></div></div></div>
+    <div class="block"><h3>${L("المزامنة بين الموبايل والآيباد والكمبيوتر")}</h3>
+      <form class="card" data-form="sync"><label class="fld"><span>${L("رابط المزامنة")} (Google Apps Script)</span><input id="f-surl" class="inp num" dir="ltr" value="${esc(d.syncUrl)}" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+      <label class="fld"><span>${L("كلمة السر")}</span><input id="f-skey" class="inp" dir="ltr" type="password" value="${esc(d.syncKey)}" autocomplete="off"></label>
+      <div class="row"><button class="btn primary grow">${d.syncUrl ? L('احفظ وزامن') : L('اربط')}</button>${d.syncUrl ? `<button type="button" class="btn ghost" data-act="sync-off">${L("افصل")}</button>` : ''}</div>
+      ${d.syncUrl ? `<button type="button" class="btn ghost" data-act="sync-link">${L("انسخ رابط الربط لجهاز تاني")}</button>` : ''}
+      <div class="sub">${d.lastSync ? `${L("آخر مزامنة")}: ${dueLabel(dkey(new Date(d.lastSync)))} ${clock(d.lastSync)}` : L('من غير مزامنة كل جهاز بيحفظ بياناته لوحده.')}</div></form></div>
+    <div class="block"><h3>${L('ترجمة اللي كتبته')}</h3><div class="sub">${L('بيترجم مهامك ومشاريعك وعاداتك وملاحظاتك للغة اللي تختارها، من خلال المزامنة على حساب جوجل بتاعك. وفي كل شاشة تعديل فيه زرار 🌐 يترجم الحاجة دي بس.')}</div>
+      <div class="row"><button class="btn ghost grow" data-act="tr-all" data-v="en">${I.globe} ${L('كله للإنجليزي')}</button><button class="btn ghost grow" data-act="tr-all" data-v="ar">${I.globe} ${L('كله للعربي')}</button></div>
+      ${(() => { try { return localStorage.getItem('focus.pretranslate') ? `<button class="btn ghost small" data-act="tr-undo">${L('رجّع آخر ترجمة')}</button>` : ''; } catch (e) { return ''; } })()}</div>
+    <div class="block"><h3>${L("نسخة احتياطية")}</h3><div class="row"><button class="btn ghost grow" data-act="export">${I.down} ${L("حمّل نسخة")}</button><button class="btn ghost grow" data-act="import">${I.up} ${L("رجّع نسخة")}</button></div></div>
+    <div class="block"><h3>${L("التطبيق")}</h3><div class="list">
+      ${installEvt ? `<div class="toggle"><div class="grow"><b>${L("ثبّت")} Focus ${L("على الجهاز")}</b><span>${L("يفتح لوحده زي أي ابلكيشن")}</span></div><button class="btn primary small" data-act="install">${L("ثبّت")}</button></div>` : ''}
+      <div class="toggle"><div class="grow"><b>${L("الويدجت العائم")}</b><span>${L("تايمر صغير فوق كل الشبابيك + مهام وعادات النهارده")}</span></div><button class="btn ghost small" data-act="widget">${I.widget} ${L("افتح")}</button></div></div>
+      <div class="note">${L("على الآيفون/الآيباد")}: Safari ← ${L("زرار المشاركة")} ← <b>Add to Home Screen</b>. ${L("على أندرويد")}: Chrome ← ⋮ ← <b>Install app</b>. ${L("على الكمبيوتر: أيقونة التثبيت في شريط العنوان.")}</div></div>`;
+  openSheet(L('الإعدادات'), body);
   if (!CFG.graficoo) $('#set-g')?.remove();
   if (focusG) setTimeout(() => $('#f-gpin')?.focus(), 60);
 }
 function refreshSettings() { const sh = $('.sh-body'); const st = sh ? sh.scrollTop : 0; settingsSheet(); const n = $('.sh-body'); if (n) n.scrollTop = st; }
 
+/* ---------- translating the user's own text (on request only) ---------- */
+const hasArabic = (t) => /[؀-ۿ]/.test(t || '');
+async function translateTexts(texts, to) {
+  if (!S.dev.syncUrl) throw new Error(L('الترجمة بتشتغل من خلال المزامنة — اربطها من الإعدادات الأول'));
+  const out = [];
+  for (let i = 0; i < texts.length; i += 80) {
+    let r;
+    try { r = await fetch(S.dev.syncUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ key: S.dev.syncKey, fn: 'translate', to, texts: texts.slice(i, i + 80) }) }); }
+    catch (e) { throw new Error(L('مفيش اتصال بالنت')); }
+    const j = await r.json();
+    if (!j.ok || !Array.isArray(j.out)) throw new Error(j.err === 'key' ? L('كلمة السر غلط') : L('الترجمة مش متاحة دلوقتي — جرّب تاني'));
+    out.push(...j.out);
+  }
+  return out;
+}
+function addTranslateBtn() {
+  const head = $('.sh-head'); if (!head) return;
+  const b = document.createElement('button');
+  b.className = 'icon-btn'; b.dataset.act = 'tr-sheet'; b.innerHTML = I.globe;
+  b.setAttribute('aria-label', L('ترجم للغة التانية')); b.title = L('ترجم للغة التانية');
+  head.insertBefore(b, head.lastElementChild);
+}
+async function translateSheet() {
+  const fields = [...document.querySelectorAll('.sheet #f-title, .sheet #f-notes, .sheet [data-kid], .sheet #f-pname, .sheet #f-pstages, .sheet #f-hname, .sheet #n-title, .sheet #n-body, .sheet [data-ni]')].filter((e) => e.value.trim());
+  if (!fields.length) return toast(L('مفيش كلام أترجمه'));
+  const ar = fields.filter((e) => hasArabic(e.value)).length, to = ar * 2 >= fields.length ? 'en' : 'ar';
+  busy(true, L('بيترجم…'));
+  try {
+    const out = await translateTexts(fields.map((e) => e.value), to);
+    fields.forEach((e, i) => { if (out[i]) { e.value = out[i]; e.dispatchEvent(new Event('input', { bubbles: true })); } });
+    toast(to === 'en' ? L('اتترجم للإنجليزي — راجعه واحفظ') : L('اتترجم للعربي — راجعه واحفظ'));
+  } catch (e) { toast(e.message); } finally { busy(false); }
+}
+/* every text the user wrote, as [object kind, object, field, (index)] */
+function userTexts() {
+  const out = [];
+  for (const t of tasks()) { out.push(['task', t, 'title']); if (t.notes) out.push(['task', t, 'notes']); }
+  for (const p of projects()) if (!isG(p)) { out.push(['project', p, 'name']); (p.stages || []).forEach((_, i) => out.push(['project', p, 'stages', i])); }
+  for (const h of habits()) out.push(['habit', h, 'name']);
+  for (const n of notes()) { if (n.title) out.push(['note', n, 'title']); if (n.body) out.push(['note', n, 'body']); (n.items || []).forEach((_, i) => out.push(['note', n, 'items', i])); }
+  return out;
+}
+const getT = ([, o, f, i]) => (i === undefined ? o[f] : f === 'items' ? o.items[i].t : o[f][i]) || '';
+const setT = ([, o, f, i], v) => { if (i === undefined) o[f] = v; else if (f === 'items') o.items[i].t = v; else o[f][i] = v; };
+async function translateAll(to) {
+  const all = userTexts().filter((x) => getT(x).trim() && (to === 'en' ? hasArabic(getT(x)) : !hasArabic(getT(x))));
+  if (!all.length) return toast(to === 'en' ? L('كل اللي كتبته إنجليزي أصلاً') : L('كل اللي كتبته عربي أصلاً'));
+  if (!confirm(`${L('هترجم')} ${all.length} ${L('حاجة كتبتها')} ${to === 'en' ? L('للإنجليزي') : L('للعربي')}. ${L('تقدر ترجع زي ما كانت من «تراجع».')}`)) return;
+  busy(true, `${L('بيترجم')} ${all.length}…`);
+  try {
+    const out = await translateTexts(all.map(getT), to);
+    const touched = new Map();
+    all.forEach((x) => { if (!touched.has(x[1])) touched.set(x[1], [x[0], JSON.stringify(x[1])]); });
+    try { localStorage.setItem('focus.pretranslate', JSON.stringify([...touched.values()])); } catch (e) {}
+    all.forEach((x, i) => { if (out[i]) setT(x, out[i]); });
+    for (const [o, [kind]] of touched) touch(kind, o);
+    closeSheet(); render();
+    toast(`${L('اتترجم')} ${all.length} ✓`, undoTranslate);
+  } catch (e) { toast(e.message); } finally { busy(false); }
+}
+function undoTranslate() {
+  let snap = []; try { snap = JSON.parse(localStorage.getItem('focus.pretranslate') || '[]'); } catch (e) {}
+  for (const [kind, j] of snap) { const o = JSON.parse(j); putObj(kind, o); touch(kind, getObj(kind, o.id)); }
+  try { localStorage.removeItem('focus.pretranslate'); } catch (e) {}
+  render(); toast(L('رجعت زي ما كانت ✓'));
+}
+
 /* ---------- job templates & first-run setup (public edition) ---------- */
 // [name, stages, starter tasks]
 const TPL = {
-  doctor: { e: '🩺', n: 'طبيب / صيدلي', d: 'عيادة، متابعة حالات، تعليم طبي', work: 'العيادة', life: 'حياتي', projects: [
-    ['متابعة الحالات', ['استلام الحالة', 'فحوصات', 'خطة علاج', 'متابعة'], ['مراجعة نتائج التحاليل', 'الرد على استفسارات المرضى']],
-    ['إدارة العيادة', ['مطلوب', 'جاري', 'خلص'], ['طلب مستلزمات']],
-    ['التعليم الطبي', ['هقرا', 'بقرا', 'خلصت'], ['محاضرة أو كورس الأسبوع']]],
-    habits: [['قراءة طبية 20 دقيقة', 1], ['مية — 8 كوبايات', 8], ['مشي نص ساعة', 1]] },
-  teacher: { e: '📚', n: 'مدرّس', d: 'تحضير، حصص، تصحيح', work: 'المدرسة', life: 'حياتي', projects: [
-    ['تحضير الدروس', ['تخطيط', 'تحضير', 'شرح', 'تقييم'], ['تحضير درس بكرة']],
-    ['التصحيح والدرجات', ['استلام', 'تصحيح', 'رصد'], ['تصحيح الواجب']],
-    ['أولياء الأمور', ['مطلوب', 'اتواصلت', 'اتحل'], []]],
-    habits: [['قراءة 10 صفحات', 1], ['مية — 8 كوبايات', 8]] },
-  student: { e: '🎓', n: 'طالب', d: 'مذاكرة، واجبات، امتحانات', work: 'الدراسة', life: 'حياتي', projects: [
-    ['مذاكرة المواد', ['قراءة', 'تلخيص', 'حل', 'مراجعة'], ['ذاكر أول فصل', 'حل تمارين']],
-    ['الواجبات والمشاريع', ['مطلوب', 'شغال', 'اتسلم'], ['واجب الأسبوع']],
-    ['الامتحانات', ['جدول', 'مذاكرة', 'مراجعة نهائية'], []]],
-    habits: [['مذاكرة ساعتين', 1], ['نوم بدري', 1], ['مية — 8 كوبايات', 8]] },
-  engineer: { e: '💻', n: 'مهندس / مبرمج', d: 'مشاريع، مهام، تعلّم', work: 'الشغل', life: 'حياتي', projects: [
-    ['المشروع الحالي', ['تخطيط', 'تنفيذ', 'اختبار', 'تسليم'], ['اكتب خطة الأسبوع']],
-    ['التعلّم', ['هتعلم', 'بتعلم', 'اتعلمت'], ['كورس أو مقال']]],
-    habits: [['تعلّم 30 دقيقة', 1], ['مشي', 1]] },
-  creative: { e: '🎨', n: 'مصمم / فريلانسر', d: 'عملاء، بريف، تسليمات', work: 'العملاء', life: 'حياتي', projects: [
-    ['مشروع عميل', ['بريف', 'تصميم', 'تعديلات', 'تسليم'], ['اسأل العميل عن التفاصيل']],
-    ['البورتفوليو', ['فكرة', 'تنفيذ', 'نشر'], ['جهّز أحدث شغلك']]],
-    habits: [['تمرين تصميم 20 دقيقة', 1], ['مية — 8 كوبايات', 8]] },
-  business: { e: '💼', n: 'بيزنس / مبيعات', d: 'عملاء، عروض أسعار، متابعة', work: 'البيزنس', life: 'حياتي', projects: [
-    ['العملاء', ['عميل جديد', 'عرض سعر', 'تفاوض', 'اتقفل'], ['تابع مع عميل']],
-    ['التسويق', ['فكرة', 'تنفيذ', 'نشر'], ['بوست الأسبوع']],
-    ['الحسابات', ['مطلوب', 'اتعمل'], ['راجع المصاريف']]],
-    habits: [['مراجعة أرقام اليوم', 1], ['قراءة 10 صفحات', 1]] },
-  lawyer: { e: '⚖️', n: 'محامي', d: 'قضايا، جلسات، استشارات', work: 'المكتب', life: 'حياتي', projects: [
-    ['القضايا', ['استلام', 'تحضير', 'جلسة', 'حكم'], ['جهّز مستندات الجلسة']],
-    ['الاستشارات', ['جديدة', 'بدرسها', 'اترد'], []]],
-    habits: [['قراءة قانونية 20 دقيقة', 1], ['مية — 8 كوبايات', 8]] },
-  home: { e: '🏠', n: 'البيت والعيلة', d: 'مشتريات، مواعيد، ولاد', work: 'البيت', life: 'أنا', projects: [
-    ['البيت', ['مطلوب', 'بنعمل', 'خلص'], ['قايمة المشتريات']],
-    ['الولاد', ['مطلوب', 'بنعمل', 'خلص'], ['مواعيد المدرسة']]],
-    habits: [['وقت لنفسي 20 دقيقة', 1], ['مية — 8 كوبايات', 8]] },
-  blank: { e: '✨', n: 'من غير قالب', d: 'ابدأ فاضي وظبّط بنفسك', work: 'الشغل', life: 'الحياة اليومية', projects: [], habits: [] },
+  doctor: { e: '🩺', n: L('طبيب / صيدلي'), d: L('عيادة، متابعة حالات، تعليم طبي'), work: L('العيادة'), life: L('حياتي'), projects: [
+    [L('متابعة الحالات'), [L('استلام الحالة'), L('فحوصات'), L('خطة علاج'), L('متابعة')], [L('مراجعة نتائج التحاليل'), L('الرد على استفسارات المرضى')]],
+    [L('إدارة العيادة'), [L('مطلوب'), L('جاري'), L('خلص')], [L('طلب مستلزمات')]],
+    [L('التعليم الطبي'), [L('هقرا'), L('بقرا'), L('خلصت')], [L('محاضرة أو كورس الأسبوع')]]],
+    habits: [[L('قراءة طبية 20 دقيقة'), 1], [L('مية — 8 كوبايات'), 8], [L('مشي نص ساعة'), 1]] },
+  teacher: { e: '📚', n: L('مدرّس'), d: L('تحضير، حصص، تصحيح'), work: L('المدرسة'), life: L('حياتي'), projects: [
+    [L('تحضير الدروس'), [L('تخطيط'), L('تحضير'), L('شرح'), L('تقييم')], [L('تحضير درس بكرة')]],
+    [L('التصحيح والدرجات'), [L('استلام'), L('تصحيح'), L('رصد')], [L('تصحيح الواجب')]],
+    [L('أولياء الأمور'), [L('مطلوب'), L('اتواصلت'), L('اتحل')], []]],
+    habits: [[L('قراءة 10 صفحات'), 1], [L('مية — 8 كوبايات'), 8]] },
+  student: { e: '🎓', n: L('طالب'), d: L('مذاكرة، واجبات، امتحانات'), work: L('الدراسة'), life: L('حياتي'), projects: [
+    [L('مذاكرة المواد'), [L('قراءة'), L('تلخيص'), L('حل'), L('مراجعة')], [L('ذاكر أول فصل'), L('حل تمارين')]],
+    [L('الواجبات والمشاريع'), [L('مطلوب'), L('شغال'), L('اتسلم')], [L('واجب الأسبوع')]],
+    [L('الامتحانات'), [L('جدول'), L('مذاكرة'), L('مراجعة نهائية')], []]],
+    habits: [[L('مذاكرة ساعتين'), 1], [L('نوم بدري'), 1], [L('مية — 8 كوبايات'), 8]] },
+  engineer: { e: '💻', n: L('مهندس / مبرمج'), d: L('مشاريع، مهام، تعلّم'), work: L('الشغل'), life: L('حياتي'), projects: [
+    [L('المشروع الحالي'), [L('تخطيط'), L('تنفيذ'), L('اختبار'), L('تسليم')], [L('اكتب خطة الأسبوع')]],
+    [L('التعلّم'), [L('هتعلم'), L('بتعلم'), L('اتعلمت')], [L('كورس أو مقال')]]],
+    habits: [[L('تعلّم 30 دقيقة'), 1], [L('مشي'), 1]] },
+  creative: { e: '🎨', n: L('مصمم / فريلانسر'), d: L('عملاء، بريف، تسليمات'), work: L('العملاء'), life: L('حياتي'), projects: [
+    [L('مشروع عميل'), [L('بريف'), L('تصميم'), L('تعديلات'), L('تسليم')], [L('اسأل العميل عن التفاصيل')]],
+    [L('البورتفوليو'), [L('فكرة'), L('تنفيذ'), L('نشر')], [L('جهّز أحدث شغلك')]]],
+    habits: [[L('تمرين تصميم 20 دقيقة'), 1], [L('مية — 8 كوبايات'), 8]] },
+  business: { e: '💼', n: L('بيزنس / مبيعات'), d: L('عملاء، عروض أسعار، متابعة'), work: L('البيزنس'), life: L('حياتي'), projects: [
+    [L('العملاء'), [L('عميل جديد'), L('عرض سعر'), L('تفاوض'), L('اتقفل')], [L('تابع مع عميل')]],
+    [L('التسويق'), [L('فكرة'), L('تنفيذ'), L('نشر')], [L('بوست الأسبوع')]],
+    [L('الحسابات'), [L('مطلوب'), L('اتعمل')], [L('راجع المصاريف')]]],
+    habits: [[L('مراجعة أرقام اليوم'), 1], [L('قراءة 10 صفحات'), 1]] },
+  lawyer: { e: '⚖️', n: L('محامي'), d: L('قضايا، جلسات، استشارات'), work: L('المكتب'), life: L('حياتي'), projects: [
+    [L('القضايا'), [L('استلام'), L('تحضير'), L('جلسة'), L('حكم')], [L('جهّز مستندات الجلسة')]],
+    [L('الاستشارات'), [L('جديدة'), L('بدرسها'), L('اترد')], []]],
+    habits: [[L('قراءة قانونية 20 دقيقة'), 1], [L('مية — 8 كوبايات'), 8]] },
+  home: { e: '🏠', n: L('البيت والعيلة'), d: L('مشتريات، مواعيد، ولاد'), work: L('البيت'), life: L('أنا'), projects: [
+    [L('البيت'), [L('مطلوب'), L('بنعمل'), L('خلص')], [L('قايمة المشتريات')]],
+    [L('الولاد'), [L('مطلوب'), L('بنعمل'), L('خلص')], [L('مواعيد المدرسة')]]],
+    habits: [[L('وقت لنفسي 20 دقيقة'), 1], [L('مية — 8 كوبايات'), 8]] },
+  blank: { e: '✨', n: L('من غير قالب'), d: L('ابدأ فاضي وظبّط بنفسك'), work: L('الشغل'), life: L('الحياة اليومية'), projects: [], habits: [] },
 };
 const OB = { tpl: 'blank', accent: '', bar: '', mode: 'setup' };
 function applyTemplate(key, addOnly) {
@@ -1610,42 +1716,43 @@ function applyTemplate(key, addOnly) {
     tasks0.forEach((title, k) => addTask(title, { projectId: p.id, stage: 0, due: k === 0 ? td : null, createdAt: now() + i * 10 + k }));
   }
   if (!addOnly) {
-    if (key !== 'home' && key !== 'blank') { const lp = { id: uid(), name: 'البيت والحياة', area: 'life', color: '#8A8A8E', stages: DEF_STAGES.life.slice(), stage: 1, createdAt: now() + 50 }; S.projects[lp.id] = lp; touch('project', lp); }
+    if (key !== 'home' && key !== 'blank') { const lp = { id: uid(), name: L('البيت والحياة'), area: 'life', color: '#8A8A8E', stages: DEF_STAGES.life.slice(), stage: 1, createdAt: now() + 50 }; S.projects[lp.id] = lp; touch('project', lp); }
     T0.habits.forEach(([name, target], k) => { const h = { id: uid(), name, color: HCOLORS[k % HCOLORS.length], target, days: [], log: {}, logAt: {}, createdAt: now() + k }; S.habits[h.id] = h; touch('habit', h); });
-    if (!tasks().length) addTask('جرّب تايمر 25 دقيقة على مهمة', { due: td, prio: 1, est: 1 });
-    const n = { id: uid(), title: 'أهلاً بيك 👋', body: 'دي الملاحظات — اكتب أي فكرة تيجي في بالك وانت مركز وكمّل شغلك.\nتقدر تغيّر الألوان واسم الأقسام والقوالب من ⚙️ الإعدادات.', kind: 'text', items: [], color: 'amber', pinned: true, createdAt: now() };
+    if (!tasks().length) addTask(L('جرّب تايمر 25 دقيقة على مهمة'), { due: td, prio: 1, est: 1 });
+    const n = { id: uid(), title: L('أهلاً بيك 👋'), body: L('دي الملاحظات — اكتب أي فكرة تيجي في بالك وانت مركز وكمّل شغلك.\nتقدر تغيّر الألوان واسم الأقسام والقوالب من ⚙️ الإعدادات.'), kind: 'text', items: [], color: 'amber', pinned: true, createdAt: now() };
     S.notes[n.id] = n; touch('note', n);
   }
 }
 function onboardSheet(mode) {
   OB.mode = mode === 'add' ? 'add' : 'setup';
-  OB.tpl = OB.mode === 'add' ? '' : 'blank'; OB.accent = S.pref.accent || '#EE2E24'; OB.bar = S.pref.bar || 'dark';
+  OB.tpl = OB.mode === 'add' ? '' : 'blank'; OB.accent = S.pref.accent || '#EE2E24'; OB.bar = S.pref.bar || 'auto';
   const tplBtns = Object.entries(TPL).filter(([k]) => OB.mode === 'setup' || k !== 'blank').map(([k, t]) => `<button type="button" data-act="ob-tpl" data-v="${k}" aria-pressed="${OB.tpl === k}"><span class="e">${t.e}</span><b>${t.n}</b><span>${t.d}</span></button>`).join('');
   const body = OB.mode === 'add'
-    ? `<div class="sub">اختار نوع شغل ونضيفلك مشاريعه بمراحلها وكام مهمة تبدأ بيها. مشاريعك الحالية مش هتتلمس.</div><div class="tpl" data-grp="tpl">${tplBtns}</div>`
-    : `<div class="ob-hero"><img src="icons/any-192.png" alt=""><h2>أهلاً بيك في Focus</h2><div class="sub">مهامك ومشاريعك وعاداتك وتايمر للتركيز — في مكان واحد.<br>ظبّطه على شغلك في ثواني، وتقدر تغيّر كل حاجة بعدين.</div></div>
-      <label class="fld"><span>اسمك (اختياري)</span><input id="ob-name" class="inp" placeholder="بيظهر في التحية" autocomplete="off"></label>
-      <div class="fld"><span>شغلك إيه؟</span><div class="tpl" data-grp="tpl">${tplBtns}</div></div>
-      <div class="fld"><span>اختار لونك</span><div class="swatches" data-grp="obacc">${ACCENTS.map(([c, l]) => `<button type="button" class="sw" data-act="ob-accent" data-v="${c}" aria-pressed="${OB.accent === c}" style="background:${c}" aria-label="${l}" title="${l}"></button>`).join('')}</div></div>
-      <div class="fld"><span>الشريط اللي فوق</span><div class="styles" data-grp="obbar">${BARS.map(([b, l]) => `<button type="button" data-act="ob-bar" data-v="${b}" aria-pressed="${OB.bar === b}"><i class="obprev-${b}"></i>${l}</button>`).join('')}</div></div>`;
-  const foot = OB.mode === 'add' ? `<button class="btn primary grow" data-act="ob-go">ضيف المشاريع</button>` : `<button class="btn ghost" data-act="ob-skip">تخطّي</button><button class="btn primary grow" data-act="ob-go">يلا نبدأ</button>`;
-  openSheet(OB.mode === 'add' ? 'قوالب الشغل' : 'ظبّط Focus', body, foot);
+    ? `<div class="sub">${L("اختار نوع شغل ونضيفلك مشاريعه بمراحلها وكام مهمة تبدأ بيها. مشاريعك الحالية مش هتتلمس.")}</div><div class="tpl" data-grp="tpl">${tplBtns}</div>`
+    : `<div class="ob-hero">${CFG.iconSets ? '<span class="mk big" aria-hidden="true"></span>' : '<img src="icons/any-192.png" alt="">'}<h2>${L("أهلاً بيك في")} Focus</h2><div class="sub">${L("مهامك ومشاريعك وعاداتك وتايمر للتركيز — في مكان واحد.")}<br>${L("ظبّطه على شغلك في ثواني، وتقدر تغيّر كل حاجة بعدين.")}</div></div>
+      <label class="fld"><span>${L("اسمك (اختياري)")}</span><input id="ob-name" class="inp" placeholder="${L("بيظهر في التحية")}" autocomplete="off"></label>
+      <div class="fld"><span>${L("شغلك إيه؟")}</span><div class="tpl" data-grp="tpl">${tplBtns}</div></div>
+      <div class="fld"><span>${L("اختار لونك")}</span><div class="swatches" data-grp="obacc">${ACCENTS.map(([c, l]) => `<button type="button" class="sw" data-act="ob-accent" data-v="${c}" aria-pressed="${OB.accent === c}" style="background:${c}" aria-label="${l}" title="${l}"></button>`).join('')}</div></div>
+      <div class="fld"><span>${L("الشريط اللي فوق")}</span><div class="styles" data-grp="obbar">${BARS.map(([b, l]) => `<button type="button" data-act="ob-bar" data-v="${b}" aria-pressed="${OB.bar === b}"><i class="obprev-${b}"></i>${l}</button>`).join('')}</div></div>`;
+  const foot = OB.mode === 'add' ? `<button class="btn primary grow" data-act="ob-go">${L("ضيف المشاريع")}</button>` : `<button class="btn ghost" data-act="ob-skip">${L("تخطّي")}</button><button class="btn primary grow" data-act="ob-go">${L("يلا نبدأ")}</button>`;
+  openSheet(OB.mode === 'add' ? L('قوالب الشغل') : L('ظبّط Focus'), body, foot);
   paintObPreview();
 }
 function paintObPreview() {
+  document.querySelectorAll('.obprev-auto').forEach((e) => { e.style.background = 'linear-gradient(90deg,#141414 50%,#ffffff 50%)'; });
   document.querySelectorAll('.obprev-dark').forEach((e) => { e.style.background = '#141414'; });
   document.querySelectorAll('.obprev-accent').forEach((e) => { e.style.background = OB.accent; });
   document.querySelectorAll('.obprev-light').forEach((e) => { e.style.background = 'var(--surface)'; });
 }
 function finishOnboard(skip) {
-  if (OB.mode === 'add') { if (!OB.tpl) { toast('اختار نوع شغل'); return; } applyTemplate(OB.tpl, true); closeSheet(); view = 'projects'; render(); toast('اتضافت المشاريع ✓'); return; }
+  if (OB.mode === 'add') { if (!OB.tpl) { toast(L('اختار نوع شغل')); return; } applyTemplate(OB.tpl, true); closeSheet(); view = 'projects'; render(); toast(L('اتضافت المشاريع ✓')); return; }
   const t = TPL[skip ? 'blank' : OB.tpl] || TPL.blank;
   const name = skip ? '' : ($('#ob-name')?.value || '').trim();
   Object.assign(S.pref, { setupDone: true, userName: name, areaWork: t.work, areaLife: t.life, accent: skip ? (S.pref.accent || '#EE2E24') : OB.accent, bar: skip ? (S.pref.bar || 'dark') : OB.bar });
   touch('pref', S.pref);
   applyTemplate(skip ? 'blank' : OB.tpl, false);
   closeSheet(); view = 'tasks'; filter = 'today'; render();
-  toast(name ? `أهلاً يا ${name} 👋` : 'يلا نبدأ 👋');
+  toast(name ? `${L("أهلاً يا")} ${name} 👋` : L('يلا نبدأ 👋'));
 }
 
 /* ---------- widget: Document PiP (desktop) → floating canvas video (mobile) → popup ---------- */
@@ -1670,7 +1777,7 @@ async function openWidget() {
   }
   if (matchMedia('(pointer:coarse)').matches && document.pictureInPictureEnabled) { if (await openVideoPip()) return; }
   const pw = window.open('./?widget=1', 'focus-widget', 'popup,width=360,height=580');
-  if (!pw) toast('المتصفح منع الشباك الصغير — اسمح بالـ popups');
+  if (!pw) toast(L('المتصفح منع الشباك الصغير — اسمح بالـ popups'));
 }
 async function openVideoPip() {
   try {
@@ -1686,7 +1793,7 @@ async function openVideoPip() {
     await v.play(); await v.requestPictureInPicture();
     v.addEventListener('leavepictureinpicture', () => { clearInterval(vpip.iv); v.remove(); vpip = null; });
     return true;
-  } catch (e) { if (vpip) { clearInterval(vpip.iv); vpip.v.remove(); vpip = null; } toast('التايمر العائم مش مدعوم على الجهاز ده'); return true; }
+  } catch (e) { if (vpip) { clearInterval(vpip.iv); vpip.v.remove(); vpip = null; } toast(L('التايمر العائم مش مدعوم على الجهاز ده')); return true; }
 }
 function drawVpip() {
   if (!vpip) return;
@@ -1701,7 +1808,7 @@ function drawVpip() {
   ctx.font = '700 84px Montserrat, system-ui, sans-serif'; ctx.fillText(fmt(rem), 28, 140);
   ctx.direction = 'rtl'; ctx.textAlign = 'right'; ctx.fillStyle = '#9A9A9E';
   ctx.font = '600 24px "IBM Plex Sans Arabic", system-ui, sans-serif';
-  ctx.fillText(`${phaseName(t)}${t.running ? '' : ' · متوقف'}`, 300, 196);
+  ctx.fillText(`${phaseName(t)}${t.running ? '' : L(' · متوقف')}`, 300, 196);
   if (task) { ctx.fillStyle = '#fff'; ctx.fillText(task.title.length > 26 ? task.title.slice(0, 25) + '…' : task.title, 300, 232); }
 }
 
@@ -1718,8 +1825,8 @@ function importData() {
       const j = JSON.parse(await i.files[0].text()); if (j.app !== 'graficoo-focus') throw 0;
       let n = 0;
       for (const [kind, coll] of COLLS) for (const o of Object.values(j[coll] || {})) { const cur = getObj(kind, o.id); if (!cur || (o.updatedAt || 0) > (cur.updatedAt || 0)) { putObj(kind, o); S.dirty[`${kind}:${o.id}`] = 1; n++; } }
-      S = normalize(S); save(); scheduleSync(); closeSheet(); render(); toast(`رجّعت ${n} عنصر`);
-    } catch (e) { toast('الملف ده مش نسخة Focus'); }
+      S = normalize(S); save(); scheduleSync(); closeSheet(); render(); toast(`${L("رجّعت")} ${n} ${L("عنصر")}`);
+    } catch (e) { toast(L('الملف ده مش نسخة Focus')); }
   };
   i.click();
 }
@@ -1745,7 +1852,7 @@ const ACT = {
   'set-stage': (el, id, v) => { const p = S.projects[id]; if (!p || isG(p)) return; p.stage = +v; touch('project', p); render(); },
   'g-advance': (el, id) => gAdvance(id),
   'g-refresh': () => gRefresh(true),
-  'g-off': () => { if (!confirm('تفصل جرافيكوو من الجهاز ده؟ المشاريع اللي نزلت هتفضل موجودة.')) return; S.dev.gToken = ''; S.dev.gName = ''; save(); refreshSettings(); render(); },
+  'g-off': () => { if (!confirm(L('تفصل جرافيكوو من الجهاز ده؟ المشاريع اللي نزلت هتفضل موجودة.'))) return; S.dev.gToken = ''; S.dev.gName = ''; save(); refreshSettings(); render(); },
   mode: (el, id, v) => setMode(v),
   'toggle-timer': () => toggleT(),
   reset: () => resetT(),
@@ -1758,6 +1865,7 @@ const ACT = {
   'set-task': (el, id) => { const t = T(); if (t.taskId !== id) { logPartial(); t.taskId = id; if (t.startedAt) setPhase(t.mode === 'timer' ? 'timer' : 'focus'); else touch('timer', t, true); } closeSheet(); render(); },
   'clear-task': () => { T().taskId = null; touch('timer', T(), true); render(); },
   settings: (el, id, v) => settingsSheet(v === 'g'),
+  'set-lang': (el, id, v) => { if (v === LANG) return; S.pref.lang = v; touch('pref', S.pref); save(); location.reload(); },
   'set-theme': (el, id, v) => { S.dev.theme = v; save(); applyTheme(); pressIn(el); },
   widget: () => openWidget(),
   'close-sheet': () => closeSheet(),
@@ -1777,7 +1885,7 @@ const ACT = {
     const all = [t, ...kidsOf(t.id)], snap = snapshot(all.map((x) => x.id));
     all.forEach((x) => { x.deleted = true; touch('task', x); });
     if (all.some((x) => x.id === T().taskId)) { T().taskId = null; touch('timer', T(), true); }
-    closeSheet(); render(); toast(all.length > 1 ? `اتمسحت هي و${all.length - 1} مهام صغيرة` : 'اتمسحت', () => restore(snap));
+    closeSheet(); render(); toast(all.length > 1 ? `${L("اتمسحت هي و")}${all.length - 1} ${L("مهام صغيرة")}` : L('اتمسحت'), () => restore(snap));
   },
   /* project sheet */
   'p-area': (el, id, v) => { const ta = $('#f-pstages'); if (ta && ta.value.trim() === DEF_STAGES[D.area].join('\n')) ta.value = DEF_STAGES[v].join('\n'); D.area = v; pressIn(el); },
@@ -1787,10 +1895,10 @@ const ACT = {
   'del-project': () => {
     const p = S.projects[D.id]; if (!p) return;
     const ts = tasks().filter((t) => t.projectId === p.id);
-    if (!confirm(`هتمسح «${p.name}»${ts.length ? ` و${ts.length} مهمة فيه` : ''}؟`)) return;
+    if (!confirm(`${L("هتمسح «")}${p.name}»${ts.length ? ` ${L("و")}${ts.length} ${L("مهمة فيه")}` : ''}${L("؟")}`)) return;
     p.deleted = true; touch('project', p); ts.forEach((t) => { t.deleted = true; touch('task', t); });
     D = null; closeSheet(); view = 'projects'; render();
-    toast('المشروع اتمسح', () => { p.deleted = false; touch('project', p); ts.forEach((t) => { t.deleted = false; touch('task', t); }); render(); });
+    toast(L('المشروع اتمسح'), () => { p.deleted = false; touch('project', p); ts.forEach((t) => { t.deleted = false; touch('task', t); }); render(); });
   },
   /* habits */
   'new-habit': () => habitSheet(null),
@@ -1803,7 +1911,7 @@ const ACT = {
   'h-color': (el, id, v) => { D.color = v; pressIn(el); },
   'h-arch': (el) => { D.archived = !D.archived; el.setAttribute('aria-pressed', String(D.archived)); },
   'save-habit': () => saveHabit(),
-  'del-habit': () => { const h = S.habits[D.id]; if (!h || !confirm(`تمسح «${h.name}» وكل أيامها؟`)) return; h.deleted = true; touch('habit', h); D = null; closeSheet(); render(); toast('العادة اتمسحت', () => { h.deleted = false; touch('habit', h); render(); }); },
+  'del-habit': () => { const h = S.habits[D.id]; if (!h || !confirm(`${L("تمسح «")}${h.name}${L("» وكل أيامها؟")}`)) return; h.deleted = true; touch('habit', h); D = null; closeSheet(); render(); toast(L('العادة اتمسحت'), () => { h.deleted = false; touch('habit', h); render(); }); },
   /* notes */
   'new-note': (el, id, v) => noteSheet(null, { kind: v || 'text', projectId: id || (view === 'notes' ? noteProj || null : null) }),
   'edit-note': (el, id) => noteSheet(id),
@@ -1818,7 +1926,7 @@ const ACT = {
   },
   'ni-toggle': (el, id) => { readNote(); const it = D.items.find((x) => x.id === id); if (it) it.done = !it.done; $('#n-items').innerHTML = noteItemsHtml(); },
   'ni-del': (el, id) => { readNote(); D.items = D.items.filter((x) => x.id !== id); $('#n-items').innerHTML = noteItemsHtml(); },
-  'del-note': () => { const n = S.notes[D.id]; onSheetClose = null; D = null; closeSheet(); if (!n) return; n.deleted = true; touch('note', n); render(); toast('الملاحظة اتمسحت', () => { n.deleted = false; touch('note', n); render(); }); },
+  'del-note': () => { const n = S.notes[D.id]; onSheetClose = null; D = null; closeSheet(); if (!n) return; n.deleted = true; touch('note', n); render(); toast(L('الملاحظة اتمسحت'), () => { n.deleted = false; touch('note', n); render(); }); },
   /* themes & setup (public edition) */
   'set-accent': (el, id, v) => { S.pref.accent = v; touch('pref', S.pref); pressIn(el); const pk = document.querySelector('.sw.pick'); if (pk) pk.setAttribute('aria-pressed', 'false'); applyAccent(); refreshSettings(); },
   'set-bar': (el, id, v) => { S.pref.bar = v; touch('pref', S.pref); pressIn(el); applyAccent(); },
@@ -1840,14 +1948,17 @@ const ACT = {
     if (S.dev.notify) { S.dev.notify = false; save(); return refreshSettings(); }
     const r = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
     S.dev.notify = r === 'granted'; save(); refreshSettings();
-    if (S.dev.notify) notify('الإشعارات شغالة ✓', 'هنبلغك لما التايمر يخلص', 'focus-test');
+    if (S.dev.notify) notify(L('الإشعارات شغالة ✓'), L('هنبلغك لما التايمر يخلص'), 'focus-test');
   },
   'test-sound': () => { const s = S.dev.sound; S.dev.sound = true; chime(); S.dev.sound = s; },
   'sync-link': async () => {
     const link = `${location.origin}${location.pathname}#sync=${encodeURIComponent(S.dev.syncUrl)}&key=${encodeURIComponent(S.dev.syncKey)}`;
-    try { await navigator.clipboard.writeText(link); toast('اتنسخ — افتحه على الجهاز التاني (فيه كلمة السر، متبعتهوش لحد)'); }
-    catch (e) { prompt('انسخ الرابط ده وافتحه على الجهاز التاني:', link); }
+    try { await navigator.clipboard.writeText(link); toast(L('اتنسخ — افتحه على الجهاز التاني (فيه كلمة السر، متبعتهوش لحد)')); }
+    catch (e) { prompt(L('انسخ الرابط ده وافتحه على الجهاز التاني:'), link); }
   },
+  'tr-sheet': () => translateSheet(),
+  'tr-all': (el, id, v) => translateAll(v),
+  'tr-undo': () => undoTranslate(),
   'sync-off': () => { Object.assign(S.dev, { syncUrl: '', syncKey: '', since: 0, lastSync: 0 }); save(); refreshSettings(); render(); },
   export: () => exportData(),
   import: () => importData(),
@@ -1867,7 +1978,7 @@ async function onSubmit(e) {
   if (k === 'quick') {
     const inp = f.querySelector('input'), wg = inp.id === 'wqa' || WIDGET_MODE;
     const t = addTask(inp.value, wg ? { due: dkey() } : ctxExtra());
-    if (t) { inp.value = ''; render(); const n = f.ownerDocument.getElementById(inp.id); if (n) n.focus(); toast('اتضافت ✓'); }
+    if (t) { inp.value = ''; render(); const n = f.ownerDocument.getElementById(inp.id); if (n) n.focus(); toast(L('اتضافت ✓')); }
   } else if (k === 'kid') {
     const inp = $('#f-kid'), v = inp.value.trim(); if (!v) return;
     readKidTitles();
@@ -1885,19 +1996,19 @@ async function onSubmit(e) {
   } else if (k === 'profile') {
     S.pref.userName = $('#f-uname').value.trim();
     S.pref.areaWork = $('#f-awork').value.trim() || AREAS.work; S.pref.areaLife = $('#f-alife').value.trim() || AREAS.life;
-    touch('pref', S.pref); render(); toast('اتحفظ ✓');
+    touch('pref', S.pref); render(); toast(L('اتحفظ ✓'));
   } else if (k === 'sync') {
     const url = $('#f-surl').value.trim(), key = $('#f-skey').value;
-    if (url && !/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) { toast('الرابط لازم يكون رابط Apps Script'); return; }
+    if (url && !/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) { toast(L('الرابط لازم يكون رابط Apps Script')); return; }
     if (url !== S.dev.syncUrl) { S.dev.since = 0; for (const [kind, c] of COLLS) for (const id in S[c]) S.dirty[`${kind}:${id}`] = 1; S.dirty['pref:pref'] = 1; S.dirty['timer:timer'] = 1; }
     S.dev.syncUrl = url; S.dev.syncKey = key; save();
     syncNow(true).then(refreshSettings);
   } else if (k === 'g-login') {
     const pin = $('#f-gpin').value.trim(), url = ($('#f-gurl')?.value || '').trim();
     if (!pin) { $('#f-gpin').focus(); return; }
-    if (url && !/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) { toast('الرابط لازم يكون رابط Apps Script'); return; }
+    if (url && !/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) { toast(L('الرابط لازم يكون رابط Apps Script')); return; }
     if (url) S.dev.gUrl = url;
-    busy(true, 'بيربط جرافيكوو…');
+    busy(true, L('بيربط جرافيكوو…'));
     try { await gLogin(pin); refreshSettings(); } catch (err) { toast(err.message); } finally { busy(false); }
   }
 }
@@ -1935,7 +2046,7 @@ window.addEventListener('storage', (e) => { if (e.key === LS && e.newValue) { co
 document.addEventListener('visibilitychange', () => {
   const t = T();
   if (document.visibilityState === 'visible') { closeRunNote(); wake(); syncNow(); if (now() - (S.dev.gLast || 0) > 5 * 60000) gRefresh(); if (!sheetOpen()) render(); }
-  else if (t.running) notify(`${phaseName(t)} شغال`, `${S.tasks[t.taskId] ? S.tasks[t.taskId].title + ' · ' : ''}هيخلص الساعة ${clock(t.endAt)}`, 'focus-run', true);
+  else if (t.running) notify(`${phaseName(t)} ${L("شغال")}`, `${S.tasks[t.taskId] ? S.tasks[t.taskId].title + ' · ' : ''}${L("هيخلص الساعة")} ${clock(t.endAt)}`, 'focus-run', true);
 });
 let lastWide = isWide();
 window.addEventListener('resize', () => { if (isWide() !== lastWide) { lastWide = isWide(); render(); } });
@@ -1947,6 +2058,7 @@ setInterval(() => { if (dkey() !== lastDay) { lastDay = dkey(); if (!sheetOpen()
 if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
 /* boot */
+document.querySelectorAll('#top [aria-label], #top [title]').forEach((e) => { if (e.getAttribute('aria-label')) e.setAttribute('aria-label', L(e.getAttribute('aria-label'))); if (e.title) e.title = L(e.title); });
 $('#statsBtn').innerHTML = I.chart; $('#widgetBtn').innerHTML = I.widget; $('#setBtn').innerHTML = I.gear; $('#fab').innerHTML = I.plus;
 if (WIDGET_MODE) {
   document.body.classList.add('widget-body');
@@ -1963,12 +2075,13 @@ if (WIDGET_MODE) {
     if (h.get('sync') !== S.dev.syncUrl) { S.dev.since = 0; for (const [kind, c] of COLLS) for (const id in S[c]) S.dirty[`${kind}:${id}`] = 1; }
     S.dev.syncUrl = h.get('sync'); S.dev.syncKey = h.get('key') || ''; save();
     history.replaceState(null, '', location.pathname);
-    setTimeout(() => toast('المزامنة اتربطت على الجهاز ده ✓'), 300);
+    setTimeout(() => toast(L('المزامنة اتربطت على الجهاز ده ✓')), 300);
   }
 }
 $('#brandSub').textContent = CFG.brandSub || '';
 $('#brandSub').hidden = !CFG.brandSub;
-if (CFG.themes) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyAccent());
+if (CFG.iconSets) { $('#brandImg').hidden = true; $('#brandMk').hidden = false; }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyTheme());
 save();
 render();
 syncNow();

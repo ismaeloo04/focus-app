@@ -3,3 +3,7 @@ tools/*
 sync-key*.txt
 *.local.*
 !tools/build_public.py
+!tools/i18n_wrap.py
+!tools/i18n_inject.py
+!tools/i18n_en.json
+!tools/make_public_icons.py

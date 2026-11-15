@@ -15,7 +15,7 @@ OUT = os.path.join(os.path.dirname(HERE), 'Focus Public')
 VER = sys.argv[1] if len(sys.argv) > 1 else '1'
 os.makedirs(os.path.join(OUT, 'icons'), exist_ok=True)
 
-cfg = {'edition': 'public', 'storageKey': 'focuspub.v1', 'graficoo': False, 'themes': True, 'onboarding': True, 'brandSub': ''}
+cfg = {'edition': 'public', 'storageKey': 'focuspub.v1', 'graficoo': False, 'themes': True, 'onboarding': True, 'iconSets': True, 'brandSub': 'by Graficoo'}
 html = open(os.path.join(HERE, 'index.html'), encoding='utf-8').read()
 def sub(pattern, repl, text, count=1):
     new, n = re.subn(pattern, repl, text)
@@ -25,7 +25,9 @@ html = sub(r"<script>\n'use strict';\n", "<script>window.FOCUS_CFG = " + json.du
 html = sub(r"const G_DEFAULT_URL = '[^']*';", "const G_DEFAULT_URL = '';", html)
 html = sub(r"const G_APP = '[^']*';", "const G_APP = '';", html)
 html = sub(r'<meta name="description" content="[^"]*">', '<meta name="description" content="مهامك ومشاريعك وعاداتك وملاحظاتك مع تايمر بومودورو للتركيز">', html)
-html = sub(r'<small id="brandSub">GRAFICOO</small>', '<small id="brandSub" hidden></small>', html)
+html = sub(r'<small id="brandSub">GRAFICOO</small>', '<small id="brandSub">by Graficoo</small>', html)
+html = sub(r'<link rel="icon" type="image/png" href="icons/favicon-64.png">', '<link rel="icon" type="image/png" href="icons/ee2e24/favicon-64.png">', html)
+html = sub(r'<link rel="apple-touch-icon" href="icons/apple-180.png">', '<link rel="apple-touch-icon" href="icons/ee2e24/apple-180.png">', html)
 assert 'script.google.com/macros/s/AKfycbx' not in html
 open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8', newline='\n').write(html)
 
@@ -36,10 +38,15 @@ json.dump(man, open(os.path.join(OUT, 'manifest.webmanifest'), 'w', encoding='ut
 sw = open(os.path.join(HERE, 'sw.js'), encoding='utf-8').read()
 sw = sub(r"const CACHE = '[^']*';", f"const CACHE = 'focuspub-v{VER}';", sw)
 sw = sub(r"k\.startsWith\('focus-'\)", "k.startsWith('focuspub-')", sw)
+sw = sub(r"const SHELL = \[[^\]]*\];", "const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/mark.png', './icons/ee2e24/any-192.png', './icons/ee2e24/apple-180.png'];", sw)
 open(os.path.join(OUT, 'sw.js'), 'w', encoding='utf-8', newline='\n').write(sw)
 
-for f in ['any-192.png', 'any-512.png', 'maskable-192.png', 'maskable-512.png', 'mono-192.png', 'mono-512.png', 'apple-180.png', 'favicon-64.png']:
-    shutil.copyfile(os.path.join(HERE, 'icons', f), os.path.join(OUT, 'icons', f))
+# one icon set + manifest per colour (mark only, no dark square); the default manifest is the red one
+import subprocess
+for old in ['any-192.png', 'any-512.png', 'maskable-192.png', 'maskable-512.png', 'apple-180.png', 'favicon-64.png']:
+    if os.path.exists(os.path.join(OUT, 'icons', old)): os.remove(os.path.join(OUT, 'icons', old))
+subprocess.run([sys.executable, os.path.join(HERE, 'tools', 'make_public_icons.py'), os.path.join(HERE, 'icons', 'src', 'focus-icon-src.webp'), os.path.join(OUT, 'icons'), os.path.join(OUT, 'manifest.webmanifest')], check=True)
+shutil.copyfile(os.path.join(OUT, 'manifest-ee2e24.webmanifest'), os.path.join(OUT, 'manifest.webmanifest'))
 
 os.makedirs(os.path.join(OUT, 'apps-script'), exist_ok=True)
 gs = open(os.path.join(HERE, 'apps-script', 'Code.gs'), encoding='utf-8').read().replace('Graficoo Focus', 'Focus')
