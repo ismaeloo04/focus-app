@@ -1,0 +1,4 @@
+.claude/
+tools/
+sync-key*.txt
+*.local.*
