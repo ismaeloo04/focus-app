@@ -19,6 +19,7 @@ const HEADERS = ['kind', 'id', 'updatedAt', 'syncedAt', 'json'];
 function doPost(e) {
   let req;
   try { req = JSON.parse((e && e.postData && e.postData.contents) || '{}'); } catch (err) { return json_({ ok: false, err: 'bad-json' }); }
+  if (SYNC_KEY === 'CHANGE-ME') return json_({ ok: false, err: 'setup' }); // refuse until the owner sets a real password
   if (!req.key || req.key !== SYNC_KEY) return json_({ ok: false, err: 'key' });
   // {fn:'translate', to:'en'|'ar', texts:[…]} → the user's own text translated by Google (source language detected)
   if (req.fn === 'translate') {
@@ -72,7 +73,7 @@ function merge_(rows, items, since, now) {
 /** GET ?key=… → today's open tasks and the timer, for home-screen widget apps (e.g. Scriptable on iPhone/iPad). */
 function doGet(e) {
   const p = (e && e.parameter) || {};
-  if (p.key !== SYNC_KEY) return ContentService.createTextOutput('Graficoo Focus sync is running.');
+  if (SYNC_KEY === 'CHANGE-ME' || p.key !== SYNC_KEY) return ContentService.createTextOutput('Graficoo Focus sync is running.');
   const last = sheet_().getLastRow();
   const rows = last > 1 ? sheet_().getRange(2, 1, last - 1, 5).getValues() : [];
   const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');

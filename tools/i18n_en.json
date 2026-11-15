@@ -584,5 +584,7 @@
 "بيترجم مهامك ومشاريعك وعاداتك وملاحظاتك للغة اللي تختارها، من خلال المزامنة على حساب جوجل بتاعك. وفي كل شاشة تعديل فيه زرار 🌐 يترجم الحاجة دي بس.": "Translates your tasks, projects, habits and notes into the language you pick, through sync on your own Google account. Every edit screen also has a 🌐 button that translates just that item.",
 "كله للإنجليزي": "All to English",
 "كله للعربي": "All to Arabic",
-"رجّع آخر ترجمة": "Undo the last translation"
+"رجّع آخر ترجمة": "Undo the last translation",
+"تربط المزامنة على الجهاز ده بالرابط ده؟": "Link sync on this device to this address?",
+"كل بياناتك هتتبعت للرابط ده. وافق بس لو انت اللي عامل الرابط ده من حسابك.": "All your data will be sent to this address. Only accept if you created it from your own account."
 }

@@ -1,5 +1,5 @@
 // Focus app shell: network first (latest version when online), cached copy when offline.
-const CACHE = 'focus-v7';
+const CACHE = 'focus-v8';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/any-192.png', './icons/any-512.png', './icons/maskable-512.png', './icons/apple-180.png', './icons/favicon-64.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith('focus-') && k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
