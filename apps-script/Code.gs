@@ -2,7 +2,7 @@
  * Graficoo Focus — sync backend (Google Apps Script web app).
  *
  * Setup (once):
- *   1. script.google.com → New project → paste this file as Code.gs (and appsscript.json from the same folder).
+ *   1. script.google.com → New project → paste this file as Code.gs (appsscript.json is optional).
  *   2. Change SYNC_KEY below to your own secret word (the same word goes in the app: الإعدادات → المزامنة).
  *   3. Deploy → New deployment → Web app → Execute as: Me, Who has access: Anyone → copy the /exec link.
  * The data lives in a Google Sheet named "Graficoo Focus Data" in your Drive (created on the first sync).
@@ -13,6 +13,7 @@
  */
 const SYNC_KEY = 'CHANGE-ME';
 const SHEET_NAME = 'Items';
+const TZ = 'Africa/Cairo';
 const HEADERS = ['kind', 'id', 'updatedAt', 'syncedAt', 'json'];
 
 function doPost(e) {
@@ -64,7 +65,7 @@ function doGet(e) {
   if (p.key !== SYNC_KEY) return ContentService.createTextOutput('Graficoo Focus sync is running.');
   const last = sheet_().getLastRow();
   const rows = last > 1 ? sheet_().getRange(2, 1, last - 1, 5).getValues() : [];
-  const today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   const tasks = [], projects = {};
   let timer = null;
   rows.forEach(function (r) {
