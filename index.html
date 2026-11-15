@@ -27,7 +27,7 @@
   --f-ui: "Montserrat", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --f-ar: "IBM Plex Sans Arabic", "Montserrat", system-ui, sans-serif;
   --f-display: "Alexandria", "IBM Plex Sans Arabic", system-ui, sans-serif;
-  --r-s: 10px; --r-m: 16px; --r-l: 22px;
+  --r-s: 10px; --r-m: 16px; --r-l: 22px; --glow: rgba(238,46,36,.4);
   --gut-l: max(16px, env(safe-area-inset-left, 0px)); --gut-r: max(16px, env(safe-area-inset-right, 0px));
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
@@ -63,7 +63,7 @@ svg { flex: none; }
 .brand img { width: 30px; height: 30px; border-radius: 8px; display: block; }
 .brand small { font-weight: 600; font-size: 10px; letter-spacing: .2em; color: var(--bar-muted); display: block; margin-top: -3px; }
 .top .sp { flex: 1; }
-.tb { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #333; background: var(--bar-2); color: var(--bar-ink); display: grid; place-items: center; padding: 0; }
+.tb { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--bar-line, #333); background: var(--bar-2); color: var(--bar-ink); display: grid; place-items: center; padding: 0; }
 .tb[aria-current="page"] { background: var(--red); border-color: var(--red); }
 .tb .i { width: 18px; height: 18px; }
 .sync-dot { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--bar-muted); background: none; border: 0; padding: 4px; }
@@ -104,7 +104,7 @@ h3 { font-size: 14.5px; font-weight: 700; }
 .hello { background: var(--bar); color: var(--bar-ink); border-radius: var(--r-m); padding: 18px; border: 1px solid var(--line); display: grid; gap: 4px; position: relative; overflow: hidden; }
 .hello::after { content: ""; position: absolute; width: 180px; height: 180px; border-radius: 50%; border: 22px solid var(--red); opacity: .16; inset-inline-start: -60px; top: -70px; }
 .hello .eyebrow { color: var(--bar-muted); }
-.hello h1 { color: #fff; font-size: 21px; }
+.hello h1 { color: var(--bar-ink); font-size: 21px; }
 .hello .sub { color: var(--bar-muted); }
 .stats3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; position: relative; z-index: 1; }
 .stat { background: var(--bar-2); border-radius: var(--r-s); padding: 11px 10px; display: grid; gap: 2px; border: 0; color: inherit; text-align: start; }
@@ -202,7 +202,7 @@ h3 { font-size: 14.5px; font-weight: 700; }
 .ring-wrap { position: relative; width: min(290px, 74vw); aspect-ratio: 1; }
 .ring { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
 .ring .trk { fill: none; stroke: var(--line); stroke-width: 9; }
-.ring .prg { fill: none; stroke: var(--red); stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset .25s linear; filter: drop-shadow(0 0 6px rgba(238,46,36,.45)); }
+.ring .prg { fill: none; stroke: var(--red); stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset .25s linear; filter: drop-shadow(0 0 6px var(--glow)); }
 .ring.brk .prg { stroke: var(--ink); filter: none; }
 .ring-c { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; text-align: center; }
 .ring-c .ph { font-family: var(--f-display); font-weight: 600; font-size: 14px; color: var(--muted); }
@@ -212,7 +212,7 @@ h3 { font-size: 14.5px; font-weight: 700; }
 .cyc i.on { background: var(--red); }
 .ctrl { display: flex; align-items: center; gap: 22px; }
 .cb { width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; color: var(--ink); padding: 0; }
-.cb.main { width: 76px; height: 76px; background: var(--red); border: 0; color: #fff; box-shadow: 0 8px 22px rgba(238,46,36,.38); }
+.cb.main { width: 76px; height: 76px; background: var(--red); border: 0; color: #fff; box-shadow: 0 8px 22px var(--glow); }
 .cb.main .i { width: 30px; height: 30px; }
 .ext { display: flex; gap: 8px; }
 .ext .chip { font-family: var(--f-ui); }
@@ -227,14 +227,14 @@ h3 { font-size: 14.5px; font-weight: 700; }
 
 /* mini player + floating add button (phone / tablet) */
 .mini { position: fixed; z-index: 29; left: 50%; transform: translateX(-50%); width: min(728px, calc(100% - 20px)); bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-  background: var(--bar); color: #fff; border-radius: var(--r-m); padding: 8px 8px 8px 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; }
+  background: var(--panel, var(--bar)); color: #fff; border-radius: var(--r-m); padding: 8px 8px 8px 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.28); cursor: pointer; }
 .mini svg.ring { width: 40px; height: 40px; }
 .mini .ring .trk { stroke: #333; stroke-width: 14; } .mini .ring .prg { stroke-width: 14; }
 .mini .ring.brk .prg { stroke: #fff; }
 .mini .time { font-family: var(--f-ui); font-weight: 700; font-size: 19px; direction: ltr; text-align: end; }
 .mini .tt { font-size: 12px; color: var(--bar-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mini .cb { width: 42px; height: 42px; background: var(--red); border: 0; color: #fff; }
-.fab { position: fixed; z-index: 31; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(88px + env(safe-area-inset-bottom, 0px)); width: 58px; height: 58px; border-radius: 18px; background: var(--red); color: #fff; border: 0; display: grid; place-items: center; box-shadow: 0 8px 20px rgba(238,46,36,.4); padding: 0; }
+.fab { position: fixed; z-index: 31; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(88px + env(safe-area-inset-bottom, 0px)); width: 58px; height: 58px; border-radius: 18px; background: var(--red); color: #fff; border: 0; display: grid; place-items: center; box-shadow: 0 8px 20px var(--glow); padding: 0; }
 .fab .i { width: 26px; height: 26px; }
 body.has-mini .fab { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 
@@ -393,7 +393,7 @@ textarea.inp { resize: vertical; line-height: 1.7; }
 /* widget (floating window, ?widget=1 and picture-in-picture) */
 .widget-body { background: var(--bg); }
 .wg { padding: 12px; display: grid; gap: 10px; }
-.wg-top { background: var(--bar); color: #fff; border-radius: var(--r-m); padding: 12px; display: flex; align-items: center; gap: 12px; border-bottom: 3px solid var(--red); }
+.wg-top { background: var(--panel, var(--bar)); color: #fff; border-radius: var(--r-m); padding: 12px; display: flex; align-items: center; gap: 12px; border-bottom: 3px solid var(--red); }
 .wg-top .ring-wrap { width: 78px; flex: none; }
 .wg-top .ring .trk { stroke: #333; stroke-width: 12; } .wg-top .ring .prg { stroke-width: 12; }
 .wg-top .ring.brk .prg { stroke: #fff; }
@@ -412,6 +412,21 @@ textarea.inp { resize: vertical; line-height: 1.7; }
 .wg .quick button { width: 32px; height: 32px; }
 .wg .more { text-align: center; font-size: 12px; color: var(--muted); }
 
+/* first-run setup & theme pickers */
+.tpl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tpl button { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-m); padding: 12px; text-align: start; display: grid; gap: 3px; align-content: start; }
+.tpl button .e { font-size: 22px; line-height: 1.2; }
+.tpl button b { font-size: 14px; }
+.tpl button span { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+.tpl button[aria-pressed="true"] { border-color: var(--red); box-shadow: inset 0 0 0 1.5px var(--red); background: var(--red-soft); }
+.styles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.styles button { border: 1px solid var(--line); border-radius: var(--r-m); padding: 8px; background: var(--surface); display: grid; gap: 6px; font-size: 12.5px; font-weight: 600; }
+.styles button i { height: 30px; border-radius: 8px; display: block; border: 1px solid var(--line); }
+.styles button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.sw.pick { position: relative; overflow: hidden; background: conic-gradient(#f44, #fd3, #4d4, #3cf, #46f, #d4f, #f44); }
+.sw.pick input { position: absolute; inset: -6px; opacity: 0; cursor: pointer; width: 50px; height: 50px; }
+.ob-hero { text-align: center; display: grid; gap: 6px; justify-items: center; padding-top: 4px; }
+.ob-hero img { width: 64px; height: 64px; }
 /* tablet */
 @media (min-width: 700px) {
   .pgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -435,7 +450,7 @@ textarea.inp { resize: vertical; line-height: 1.7; }
 </head>
 <body>
 <header class="top" id="top">
-  <div class="brand"><img src="icons/favicon-64.png" alt=""><div>FOCUS<small>GRAFICOO</small></div></div>
+  <div class="brand"><img src="icons/favicon-64.png" alt=""><div>FOCUS<small id="brandSub">GRAFICOO</small></div></div>
   <div class="sp"></div>
   <button class="sync-dot" id="syncDot" data-act="settings" data-s="off" hidden><i></i><span></span></button>
   <button class="tb" data-act="nav" data-v="stats" id="statsBtn" aria-label="الإحصائيات" title="الإحصائيات"></button>
@@ -456,6 +471,8 @@ textarea.inp { resize: vertical; line-height: 1.7; }
 
 <script>
 'use strict';
+/* Edition: the personal build (Graficoo link, Graficoo colours) or the public build (tools/build_public.py sets window.FOCUS_CFG). */
+const CFG = Object.assign({ edition: 'personal', storageKey: 'focus.v1', graficoo: true, themes: false, onboarding: false, brandSub: 'GRAFICOO' }, window.FOCUS_CFG || {});
 /* ---------- helpers ---------- */
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -474,6 +491,8 @@ const HCOLORS = ['#EE2E24', '#F2AE48', '#1D9A55', '#2F6FDE', '#7B4FD6', '#D9417A
 const NCOLORS = [['', 'var(--surface)'], ['red', 'var(--nc-red)'], ['amber', 'var(--nc-amber)'], ['green', 'var(--nc-green)'], ['blue', 'var(--nc-blue)'], ['purple', 'var(--nc-purple)'], ['gray', 'var(--nc-gray)']];
 const REPS = [['', 'مفيش'], ['daily', 'كل يوم'], ['weekly', 'كل أسبوع'], ['monthly', 'كل شهر'], ['days', 'أيام محددة']];
 const AREAS = { work: 'الشغل', life: 'الحياة اليومية' };
+const areaName = (a) => ((a === 'work' ? S.pref.areaWork : S.pref.areaLife) || AREAS[a]);
+const workLabel = () => (CFG.graficoo ? 'شغل تاني' : areaName('work'));
 const DEF_STAGES = { work: ['تخطيط', 'تنفيذ', 'مراجعة', 'تسليم'], life: ['هبدأ', 'شغال', 'خلص'] };
 // Same stages as the Graficoo Studio app (Projects tab, column "stage").
 const G_STAGES = [['1 - Quotation', 'عرض سعر'], ['2 - Agreed (Deposit)', 'تم الاتفاق'], ['3 - Design', 'تصميم'], ['4 - Client Approval', 'موافقة العميل'], ['5 - Printing / Production', 'طباعة / تنفيذ'], ['6 - Ready for Delivery', 'جاهز للتسليم'], ['7 - Delivered', 'تم التسليم']];
@@ -537,7 +556,7 @@ const I = {
 };
 
 /* ---------- state ---------- */
-const LS = 'focus.v1';
+const LS = CFG.storageKey;
 const DEF_PREF = { id: 'pref', focus: 25, short: 5, long: 15, longEvery: 4, autoBreak: true, autoFocus: false, updatedAt: 0 };
 const DEF_DEV = { theme: 'auto', sound: true, vibrate: true, wake: false, notify: false, syncUrl: '', syncKey: '', since: 0, lastSync: 0, showDone: false, collapsed: {}, gUrl: G_DEFAULT_URL, gToken: '', gName: '', gLast: 0 };
 const defaultTimer = () => ({ id: 'timer', mode: 'pomo', phase: 'focus', dur: 25 * 60000, left: 25 * 60000, endAt: null, running: false, startedAt: null, taskId: null, cycle: 0, timerMin: 25, updatedAt: 0 });
@@ -545,6 +564,7 @@ const COLLS = [['project', 'projects'], ['task', 'tasks'], ['session', 'sessions
 function seed() {
   const t = dkey(), base = { updatedAt: 1, createdAt: 1 };
   const S0 = { projects: {}, tasks: {}, sessions: {}, notes: {}, habits: {}, timer: defaultTimer(), pref: { ...DEF_PREF }, dev: { ...DEF_DEV }, dirty: {} };
+  if (CFG.onboarding) return S0; // the setup sheet fills it from a job template
   S0.projects['seed-p2'] = { id: 'seed-p2', name: 'البيت والحياة', area: 'life', color: '#8A8A8E', stages: DEF_STAGES.life.slice(), stage: 1, ...base };
   const mk = (id, title, projectId, extra) => (S0.tasks[id] = { id, title, notes: '', projectId, due: t, prio: 0, repeat: '', est: 0, done: false, ...base, ...extra });
   mk('seed-t1', 'جرّب تايمر 25 دقيقة على مهمة', null, { prio: 1, est: 1 });
@@ -838,7 +858,7 @@ function applyGraficoo(list) {
   return n;
 }
 async function gRefresh(manual) {
-  if (!S.dev.gToken || gBusy) return;
+  if (!CFG.graficoo || !S.dev.gToken || gBusy) return;
   gBusy = true;
   try {
     const d = await gRpc('refreshData', [S.dev.gToken]);
@@ -913,7 +933,7 @@ function treeList(arr, opt = {}) {
 }
 const section = (title, arr, opt = {}) => arr.length ? `<div class="block"><div class="sec-head"><h3>${title}</h3><span class="c">${arr.filter((t) => !t.parentId || !arr.some((x) => x.id === t.parentId)).length}</span></div>${treeList(arr, opt)}</div>` : '';
 const quickAdd = (ph, id = 'qa') => `<form class="quick" data-form="quick"><input id="${id}" placeholder="${ph}" autocomplete="off" enterkeyhint="done" aria-label="مهمة جديدة"><button aria-label="أضف">${I.plus}</button></form>`;
-function greet() { const h = new Date().getHours(); return h < 12 ? 'صباح الخير' : h < 17 ? 'يومك سعيد' : 'مساء الخير'; }
+function greet() { const h = new Date().getHours(), n = (S.pref.userName || '').trim(); return (h < 12 ? 'صباح الخير' : h < 17 ? 'يومك سعيد' : 'مساء الخير') + (n ? ` يا ${esc(n)}` : ''); }
 /* open tasks whose parent is also open come along with their parent */
 function withParents(list) {
   const ids = new Set(list.map((t) => t.id)), out = list.slice();
@@ -927,6 +947,7 @@ function habitPills(day) {
     <div class="hpills">${hs.map((h) => { const c = hCount(h, day), tg = h.target || 1, on = c >= tg; return `<button class="hpill ${on ? 'on' : ''}" style="--hc:${hc(h)}" data-act="habit-tick" data-id="${esc(h.id)}"><span class="r">${on ? I.check : tg > 1 ? `${c}/${tg}` : ''}</span>${esc(h.name)}</button>`; }).join('')}</div></div>`;
 }
 function deliveries() {
+  if (!CFG.graficoo) return '';
   const td = dkey(), soon = addDays(td, 2);
   const ps = projects().filter((p) => isG(p) && openProj(p) && p.delivery && p.delivery <= soon && p.gstage !== '1 - Quotation').sort((a, b) => (a.delivery < b.delivery ? -1 : 1));
   if (!ps.length) return '';
@@ -1005,12 +1026,12 @@ function viewProjects() {
   const ps = projects();
   const gps = ps.filter((p) => isG(p) && openProj(p)).sort((a, b) => (a.gstage === '1 - Quotation') - (b.gstage === '1 - Quotation') || ((a.delivery || '9') < (b.delivery || '9') ? -1 : 1));
   let h = `<div class="sec-head"><h1>المشاريع</h1><button class="btn primary small" data-act="new-project">${I.plus} مشروع</button></div>`;
-  h += `<div class="block"><div class="sec-head"><h3>شغل جرافيكوو</h3>${S.dev.gToken ? `<button class="link" data-act="g-refresh">${I.sync} حدّث</button>` : `<button class="link" data-act="settings" data-v="g">اربط ${I.chev}</button>`}</div>`;
-  h += gps.length ? `<div class="pgrid">${gps.map(pcard).join('')}</div>` : `<div class="card empty">${S.dev.gToken ? 'مفيش مشاريع مفتوحة في جرافيكوو دلوقتي.' : '<b>مشاريع جرافيكوو بتيجي هنا لوحدها</b>اربط حسابك من الإعدادات بالـ PIN بتاع ابلكيشن جرافيكوو.'}</div>`;
-  h += `</div>`;
+  if (CFG.graficoo) h += `<div class="block"><div class="sec-head"><h3>شغل جرافيكوو</h3>${S.dev.gToken ? `<button class="link" data-act="g-refresh">${I.sync} حدّث</button>` : `<button class="link" data-act="settings" data-v="g">اربط ${I.chev}</button>`}</div>`;
+  if (CFG.graficoo) h += gps.length ? `<div class="pgrid">${gps.map(pcard).join('')}</div>` : `<div class="card empty">${S.dev.gToken ? 'مفيش مشاريع مفتوحة في جرافيكوو دلوقتي.' : '<b>مشاريع جرافيكوو بتيجي هنا لوحدها</b>اربط حسابك من الإعدادات بالـ PIN بتاع ابلكيشن جرافيكوو.'}</div>`;
+  if (CFG.graficoo) h += `</div>`;
   for (const area of ['work', 'life']) {
     const arr = ps.filter((p) => !isG(p) && p.area === area && openProj(p));
-    h += `<div class="block"><div class="sec-head"><h3>${area === 'work' ? 'شغل تاني' : AREAS.life}</h3><span class="c">${arr.length}</span></div><div class="pgrid">${arr.map(pcard).join('')}<button class="pcard addcard" data-act="new-project" data-v="${area}">${I.plus} مشروع ${area === 'work' ? 'شغل' : 'شخصي'}</button></div></div>`;
+    h += `<div class="block"><div class="sec-head"><h3>${area === 'work' ? workLabel() : areaName('life')}</h3><span class="c">${arr.length}</span></div><div class="pgrid">${arr.map(pcard).join('')}<button class="pcard addcard" data-act="new-project" data-v="${area}">${I.plus} مشروع ${area === 'work' ? 'شغل' : 'شخصي'}</button></div></div>`;
   }
   const arch = ps.filter((p) => !openProj(p));
   if (arch.length) h += `<div class="block"><div class="sec-head"><h3>اتسلم / مؤرشف</h3><button class="link" data-act="show-arch">${S.dev.showArch ? 'اخفي' : 'اعرض'} (${arch.length})</button></div>${S.dev.showArch ? `<div class="list">${arch.map((p) => `<button class="pickrow" data-act="open-project" data-id="${esc(p.id)}"><i class="pdot" style="background:${esc(p.color)}"></i><b>${esc(p.name)}</b><span>${isG(p) ? esc(stageName(p)) : 'مؤرشف'}</span></button>`).join('')}</div>` : ''}</div>`;
@@ -1042,7 +1063,7 @@ function viewProject() {
   const pnotes = notes().filter((n) => n.projectId === p.id).sort((a, b) => (b.pinned - a.pinned) || (b.updatedAt - a.updatedAt));
   return `<div class="phead"><div class="row"><button class="icon-btn" data-act="nav" data-v="projects" aria-label="رجوع">${I.back}</button><i class="pdot" style="background:${esc(p.color)}"></i><h1 class="grow">${esc(p.name)}</h1><button class="icon-btn" data-act="edit-project" data-id="${esc(p.id)}" aria-label="إعدادات المشروع">${I.edit}</button></div>
     ${gHead}
-    <div class="card"><div class="row"><span class="sub grow">${isG(p) ? 'شغل جرافيكوو' : AREAS[p.area]}${p.archived ? ' · مؤرشف' : ''}${p.gone ? ' · اتشال من جرافيكوو' : ''}</span><b class="num">${st.done}/${st.total}</b></div><div class="bar"><i style="width:${st.total ? Math.round((st.done / st.total) * 100) : 0}%;background:${esc(p.color)}"></i></div>
+    <div class="card"><div class="row"><span class="sub grow">${isG(p) ? 'شغل جرافيكوو' : areaName(p.area)}${p.archived ? ' · مؤرشف' : ''}${p.gone ? ' · اتشال من جرافيكوو' : ''}</span><b class="num">${st.done}/${st.total}</b></div><div class="bar"><i style="width:${st.total ? Math.round((st.done / st.total) * 100) : 0}%;background:${esc(p.color)}"></i></div>
     <div class="row sub"><span class="grow">${st.open} خطوة مفتوحة</span><span>${fm.v} ${fm.u} تركيز</span></div></div></div>
     ${stageTrack}
     <div class="chips">${chip('pfilter', 'open', `مفتوحة<span class="c">${st.open}</span>`, projFilter === 'open')}${chip('pfilter', 'done', `خلصت<span class="c">${st.done}</span>`, projFilter === 'done')}</div>
@@ -1148,7 +1169,7 @@ function railHtml() {
   const grp = (title, arr) => arr.length ? `<div class="rp"><div class="eyebrow">${title}</div>${arr.map((p) => `<button data-act="open-project" data-id="${esc(p.id)}" ${view === 'project' && projId === p.id ? 'aria-current="page"' : ''}><i class="pdot" style="background:${esc(p.color)}"></i><span>${esc(p.name)}</span><span class="num sub">${open.filter((t) => t.projectId === p.id).length || ''}</span></button>`).join('')}</div>` : '';
   return `<button class="btn primary add" data-act="fab">${I.plus} ${fabLabel()}</button>
     ${nv('tasks', I.tasks, 'المهام', n || '')}${nv('projects', I.folder, 'المشاريع')}${nv('timer', I.timer, 'التايمر')}${nv('habits', I.habit, 'العادات', hLeft || '')}${nv('notes', I.note, 'الملاحظات')}${nv('stats', I.chart, 'الإحصائيات')}
-    ${grp('جرافيكوو', ps.filter(isG))}${grp('شغل تاني', ps.filter((p) => !isG(p) && p.area === 'work'))}${grp(AREAS.life, ps.filter((p) => !isG(p) && p.area === 'life'))}
+    ${grp('جرافيكوو', ps.filter(isG))}${grp(workLabel(), ps.filter((p) => !isG(p) && p.area === 'work'))}${grp(areaName('life'), ps.filter((p) => !isG(p) && p.area === 'life'))}
     <div class="kbd"><kbd>Space</kbd> شغّل/وقّف التايمر<br><kbd>N</kbd> ${fabLabel()}</div>`;
 }
 function navHtml() {
@@ -1191,6 +1212,44 @@ function applyTheme() {
   const th = S.dev.theme, root = document.documentElement;
   if (th === 'auto') root.removeAttribute('data-theme'); else root.dataset.theme = th;
   if (pipWin && !pipWin.closed) { const r = pipWin.document.documentElement; if (th === 'auto') r.removeAttribute('data-theme'); else r.dataset.theme = th; }
+  if (CFG.themes) applyAccent();
+}
+/* ---------- colours & styles (public edition) ---------- */
+const ACCENTS = [['#EE2E24', 'أحمر'], ['#2F6FDE', 'أزرق'], ['#1D9A55', 'أخضر'], ['#7B4FD6', 'بنفسجي'], ['#F07A1A', 'برتقالي'], ['#0E9F9A', 'تركواز'], ['#D9417A', 'وردي'], ['#4A4A4F', 'رمادي']];
+const BARS = [['dark', 'غامق'], ['accent', 'ملوّن'], ['light', 'فاتح']];
+const hex2rgb = (h) => { h = String(h).replace('#', ''); if (h.length === 3) h = h.split('').map((c) => c + c).join(''); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) || 0); };
+const rgb2hex = (a) => '#' + a.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+const mixHex = (a, b, t) => { const x = hex2rgb(a), y = hex2rgb(b); return rgb2hex(x.map((v, i) => v + (y[i] - v) * t)); };
+const isDarkMode = () => S.dev.theme === 'dark' || (S.dev.theme === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+function applyAccent() {
+  const docsR = [document.documentElement, ...(pipWin && !pipWin.closed ? [pipWin.document.documentElement] : [])];
+  const acc = /^#[0-9a-f]{6}$/i.test(S.pref.accent || '') ? S.pref.accent : '#EE2E24', dk = isDarkMode(), [R, G, B] = hex2rgb(acc), bar = S.pref.bar || 'dark';
+  const v = {
+    '--red': dk ? mixHex(acc, '#ffffff', 0.08) : acc,
+    '--red-ink': dk ? mixHex(acc, '#ffffff', 0.4) : mixHex(acc, '#000000', 0.18),
+    '--red-soft': dk ? mixHex(acc, '#1A1A1A', 0.8) : mixHex(acc, '#ffffff', 0.88),
+    '--glow': `rgba(${R},${G},${B},.38)`,
+  };
+  if (bar === 'accent') Object.assign(v, { '--bar': dk ? mixHex(acc, '#000000', 0.35) : acc, '--bar-ink': '#ffffff', '--bar-muted': 'rgba(255,255,255,.78)', '--bar-2': 'rgba(255,255,255,.16)', '--bar-line': 'rgba(255,255,255,.28)', '--panel': '' });
+  else if (bar === 'light') Object.assign(v, { '--bar': 'var(--surface)', '--bar-ink': 'var(--ink)', '--bar-muted': 'var(--muted)', '--bar-2': 'var(--surface-2)', '--bar-line': 'var(--line)', '--panel': '#141414' });
+  else Object.assign(v, { '--bar': '', '--bar-ink': '', '--bar-muted': '', '--bar-2': '', '--bar-line': '', '--panel': '' });
+  for (const r of docsR) for (const [k, val] of Object.entries(v)) { if (val) r.style.setProperty(k, val); else r.style.removeProperty(k); }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = bar === 'accent' ? (dk ? mixHex(acc, '#000000', 0.35) : acc) : bar === 'light' ? (dk ? '#1A1A1A' : '#FFFFFF') : (dk ? '#000000' : '#141414');
+}
+function themeControls() {
+  const acc = S.pref.accent || '#EE2E24', bar = S.pref.bar || 'dark', known = ACCENTS.some(([c]) => c.toLowerCase() === acc.toLowerCase());
+  const prev = (b) => b === 'accent' ? `background:${acc}` : b === 'light' ? 'background:var(--surface)' : 'background:#141414';
+  return `<div class="fld"><span>اللون الأساسي</span><div class="swatches" data-grp="accent">${ACCENTS.map(([c, l]) => `<button type="button" class="sw" data-act="set-accent" data-v="${c}" aria-pressed="${acc.toLowerCase() === c.toLowerCase()}" style="background:${c}" aria-label="${l}" title="${l}"></button>`).join('')}<label class="sw pick" aria-pressed="${!known}" title="لون من اختيارك"><input type="color" id="f-accent" value="${esc(acc)}" aria-label="لون من اختيارك"></label></div></div>
+    <div class="fld"><span>الشريط اللي فوق</span><div class="styles" data-grp="bar">${BARS.map(([b, l]) => `<button type="button" data-act="set-bar" data-v="${b}" aria-pressed="${bar === b}"><i style="${prev(b)}"></i>${l}</button>`).join('')}</div></div>`;
+}
+function profileControls() {
+  const p = S.pref;
+  return `<div class="block"><h3>بياناتك وشغلك</h3><form class="card" data-form="profile">
+      <label class="fld"><span>اسمك (بيظهر في التحية)</span><input id="f-uname" class="inp" value="${esc(p.userName || '')}" placeholder="اختياري" autocomplete="off"></label>
+      <div class="row"><label class="fld grow"><span>اسم قسم الشغل</span><input id="f-awork" class="inp" value="${esc(areaName('work'))}" autocomplete="off"></label><label class="fld grow"><span>اسم القسم الشخصي</span><input id="f-alife" class="inp" value="${esc(areaName('life'))}" autocomplete="off"></label></div>
+      <button class="btn primary">احفظ</button></form>
+    <button class="btn ghost" data-act="onboard" data-v="add">${I.plus} ضيف مشاريع من قالب شغل</button></div>`;
 }
 function render() {
   applyTheme(); setSyncState(syncing ? 'busy' : S.dev.lastSync ? 'ok' : 'off');
@@ -1291,7 +1350,7 @@ const sheetOpen = () => !!$('#sheets').firstChild;
 function projOptions(sel) {
   const ps = projects().filter((p) => openProj(p) || p.id === sel);
   const grp = (label, arr) => arr.length ? `<optgroup label="${label}">${arr.map((p) => `<option value="${esc(p.id)}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</optgroup>` : '';
-  return `<option value="">من غير مشروع</option>${grp('جرافيكوو', ps.filter(isG))}${grp('شغل تاني', ps.filter((p) => !isG(p) && p.area === 'work'))}${grp(AREAS.life, ps.filter((p) => !isG(p) && p.area === 'life'))}`;
+  return `<option value="">من غير مشروع</option>${grp('جرافيكوو', ps.filter(isG))}${grp(workLabel(), ps.filter((p) => !isG(p) && p.area === 'work'))}${grp(areaName('life'), ps.filter((p) => !isG(p) && p.area === 'life'))}`;
 }
 function parentOptions(sel, selfId) {
   const bad = new Set([selfId]); if (selfId) kidsOf(selfId).forEach((k) => bad.add(k.id));
@@ -1477,7 +1536,8 @@ function settingsSheet(focusG) {
         <label class="fld"><span>PIN</span><input id="f-gpin" class="inp num" type="password" inputmode="numeric" autocomplete="off" dir="ltr"></label>
         <details><summary class="sub">رابط السيرفر (متغيرش غير لو عملت نشر جديد)</summary><input id="f-gurl" class="inp num" dir="ltr" value="${esc(d.gUrl || G_DEFAULT_URL)}" style="margin-top:8px"></details>
         <button class="btn primary">اربط</button></form>`}</div>
-    <div class="block"><h3>الشكل</h3><div class="chips">${[['auto', 'تلقائي'], ['light', 'فاتح'], ['dark', 'غامق']].map(([v, l]) => chip('set-theme', v, l, d.theme === v)).join('')}</div></div>
+    <div class="block"><h3>الشكل</h3><div class="chips">${[['auto', 'تلقائي'], ['light', 'فاتح'], ['dark', 'غامق']].map(([v, l]) => chip('set-theme', v, l, d.theme === v)).join('')}</div>${CFG.themes ? themeControls() : ''}</div>
+    ${CFG.onboarding ? profileControls() : ''}
     <div class="block"><h3>البومودورو</h3><div class="list">${step('focus', 'التركيز (دقيقة)', p.focus)}${step('short', 'الراحة القصيرة', p.short)}${step('long', 'الراحة الطويلة', p.long)}${step('longEvery', 'راحة طويلة كل كام جلسة', p.longEvery)}
       ${tg('pref-autoBreak', p.autoBreak, 'ابدأ الراحة لوحدها', 'أول ما التركيز يخلص')}${tg('pref-autoFocus', p.autoFocus, 'ابدأ التركيز لوحده', 'أول ما الراحة تخلص')}</div></div>
     <div class="block"><h3>التنبيهات</h3><div class="list">${tg('dev-sound', d.sound, 'صوت لما التايمر يخلص')}${tg('dev-vibrate', d.vibrate, 'اهتزاز', 'للموبايل')}${tg('dev-notify', d.notify && !notifState, 'إشعارات', notifState || 'لما التايمر يخلص والتطبيق في الخلفية')}${tg('dev-wake', d.wake, 'خلّي الشاشة منورة', 'وقت ما التايمر شغال')}
@@ -1494,9 +1554,99 @@ function settingsSheet(focusG) {
       <div class="toggle"><div class="grow"><b>الويدجت العائم</b><span>تايمر صغير فوق كل الشبابيك + مهام وعادات النهارده</span></div><button class="btn ghost small" data-act="widget">${I.widget} افتح</button></div></div>
       <div class="note">على الآيفون/الآيباد: Safari ← زرار المشاركة ← <b>Add to Home Screen</b>. على أندرويد: Chrome ← ⋮ ← <b>Install app</b>. على الكمبيوتر: أيقونة التثبيت في شريط العنوان.</div></div>`;
   openSheet('الإعدادات', body);
+  if (!CFG.graficoo) $('#set-g')?.remove();
   if (focusG) setTimeout(() => $('#f-gpin')?.focus(), 60);
 }
 function refreshSettings() { const sh = $('.sh-body'); const st = sh ? sh.scrollTop : 0; settingsSheet(); const n = $('.sh-body'); if (n) n.scrollTop = st; }
+
+/* ---------- job templates & first-run setup (public edition) ---------- */
+// [name, stages, starter tasks]
+const TPL = {
+  doctor: { e: '🩺', n: 'طبيب / صيدلي', d: 'عيادة، متابعة حالات، تعليم طبي', work: 'العيادة', life: 'حياتي', projects: [
+    ['متابعة الحالات', ['استلام الحالة', 'فحوصات', 'خطة علاج', 'متابعة'], ['مراجعة نتائج التحاليل', 'الرد على استفسارات المرضى']],
+    ['إدارة العيادة', ['مطلوب', 'جاري', 'خلص'], ['طلب مستلزمات']],
+    ['التعليم الطبي', ['هقرا', 'بقرا', 'خلصت'], ['محاضرة أو كورس الأسبوع']]],
+    habits: [['قراءة طبية 20 دقيقة', 1], ['مية — 8 كوبايات', 8], ['مشي نص ساعة', 1]] },
+  teacher: { e: '📚', n: 'مدرّس', d: 'تحضير، حصص، تصحيح', work: 'المدرسة', life: 'حياتي', projects: [
+    ['تحضير الدروس', ['تخطيط', 'تحضير', 'شرح', 'تقييم'], ['تحضير درس بكرة']],
+    ['التصحيح والدرجات', ['استلام', 'تصحيح', 'رصد'], ['تصحيح الواجب']],
+    ['أولياء الأمور', ['مطلوب', 'اتواصلت', 'اتحل'], []]],
+    habits: [['قراءة 10 صفحات', 1], ['مية — 8 كوبايات', 8]] },
+  student: { e: '🎓', n: 'طالب', d: 'مذاكرة، واجبات، امتحانات', work: 'الدراسة', life: 'حياتي', projects: [
+    ['مذاكرة المواد', ['قراءة', 'تلخيص', 'حل', 'مراجعة'], ['ذاكر أول فصل', 'حل تمارين']],
+    ['الواجبات والمشاريع', ['مطلوب', 'شغال', 'اتسلم'], ['واجب الأسبوع']],
+    ['الامتحانات', ['جدول', 'مذاكرة', 'مراجعة نهائية'], []]],
+    habits: [['مذاكرة ساعتين', 1], ['نوم بدري', 1], ['مية — 8 كوبايات', 8]] },
+  engineer: { e: '💻', n: 'مهندس / مبرمج', d: 'مشاريع، مهام، تعلّم', work: 'الشغل', life: 'حياتي', projects: [
+    ['المشروع الحالي', ['تخطيط', 'تنفيذ', 'اختبار', 'تسليم'], ['اكتب خطة الأسبوع']],
+    ['التعلّم', ['هتعلم', 'بتعلم', 'اتعلمت'], ['كورس أو مقال']]],
+    habits: [['تعلّم 30 دقيقة', 1], ['مشي', 1]] },
+  creative: { e: '🎨', n: 'مصمم / فريلانسر', d: 'عملاء، بريف، تسليمات', work: 'العملاء', life: 'حياتي', projects: [
+    ['مشروع عميل', ['بريف', 'تصميم', 'تعديلات', 'تسليم'], ['اسأل العميل عن التفاصيل']],
+    ['البورتفوليو', ['فكرة', 'تنفيذ', 'نشر'], ['جهّز أحدث شغلك']]],
+    habits: [['تمرين تصميم 20 دقيقة', 1], ['مية — 8 كوبايات', 8]] },
+  business: { e: '💼', n: 'بيزنس / مبيعات', d: 'عملاء، عروض أسعار، متابعة', work: 'البيزنس', life: 'حياتي', projects: [
+    ['العملاء', ['عميل جديد', 'عرض سعر', 'تفاوض', 'اتقفل'], ['تابع مع عميل']],
+    ['التسويق', ['فكرة', 'تنفيذ', 'نشر'], ['بوست الأسبوع']],
+    ['الحسابات', ['مطلوب', 'اتعمل'], ['راجع المصاريف']]],
+    habits: [['مراجعة أرقام اليوم', 1], ['قراءة 10 صفحات', 1]] },
+  lawyer: { e: '⚖️', n: 'محامي', d: 'قضايا، جلسات، استشارات', work: 'المكتب', life: 'حياتي', projects: [
+    ['القضايا', ['استلام', 'تحضير', 'جلسة', 'حكم'], ['جهّز مستندات الجلسة']],
+    ['الاستشارات', ['جديدة', 'بدرسها', 'اترد'], []]],
+    habits: [['قراءة قانونية 20 دقيقة', 1], ['مية — 8 كوبايات', 8]] },
+  home: { e: '🏠', n: 'البيت والعيلة', d: 'مشتريات، مواعيد، ولاد', work: 'البيت', life: 'أنا', projects: [
+    ['البيت', ['مطلوب', 'بنعمل', 'خلص'], ['قايمة المشتريات']],
+    ['الولاد', ['مطلوب', 'بنعمل', 'خلص'], ['مواعيد المدرسة']]],
+    habits: [['وقت لنفسي 20 دقيقة', 1], ['مية — 8 كوبايات', 8]] },
+  blank: { e: '✨', n: 'من غير قالب', d: 'ابدأ فاضي وظبّط بنفسك', work: 'الشغل', life: 'الحياة اليومية', projects: [], habits: [] },
+};
+const OB = { tpl: 'blank', accent: '', bar: '', mode: 'setup' };
+function applyTemplate(key, addOnly) {
+  const T0 = TPL[key] || TPL.blank, td = dkey(), pcols = ['#2F6FDE', '#1D9A55', '#F2AE48', '#7B4FD6', '#D9417A', '#0E9F9A'];
+  let i = 0;
+  for (const [name, stages, tasks0] of T0.projects) {
+    const p = { id: uid(), name, area: 'work', color: pcols[i++ % pcols.length], stages: stages.slice(), stage: 0, createdAt: now() + i };
+    S.projects[p.id] = p; touch('project', p);
+    tasks0.forEach((title, k) => addTask(title, { projectId: p.id, stage: 0, due: k === 0 ? td : null, createdAt: now() + i * 10 + k }));
+  }
+  if (!addOnly) {
+    if (key !== 'home' && key !== 'blank') { const lp = { id: uid(), name: 'البيت والحياة', area: 'life', color: '#8A8A8E', stages: DEF_STAGES.life.slice(), stage: 1, createdAt: now() + 50 }; S.projects[lp.id] = lp; touch('project', lp); }
+    T0.habits.forEach(([name, target], k) => { const h = { id: uid(), name, color: HCOLORS[k % HCOLORS.length], target, days: [], log: {}, logAt: {}, createdAt: now() + k }; S.habits[h.id] = h; touch('habit', h); });
+    if (!tasks().length) addTask('جرّب تايمر 25 دقيقة على مهمة', { due: td, prio: 1, est: 1 });
+    const n = { id: uid(), title: 'أهلاً بيك 👋', body: 'دي الملاحظات — اكتب أي فكرة تيجي في بالك وانت مركز وكمّل شغلك.\nتقدر تغيّر الألوان واسم الأقسام والقوالب من ⚙️ الإعدادات.', kind: 'text', items: [], color: 'amber', pinned: true, createdAt: now() };
+    S.notes[n.id] = n; touch('note', n);
+  }
+}
+function onboardSheet(mode) {
+  OB.mode = mode === 'add' ? 'add' : 'setup';
+  OB.tpl = OB.mode === 'add' ? '' : 'blank'; OB.accent = S.pref.accent || '#EE2E24'; OB.bar = S.pref.bar || 'dark';
+  const tplBtns = Object.entries(TPL).filter(([k]) => OB.mode === 'setup' || k !== 'blank').map(([k, t]) => `<button type="button" data-act="ob-tpl" data-v="${k}" aria-pressed="${OB.tpl === k}"><span class="e">${t.e}</span><b>${t.n}</b><span>${t.d}</span></button>`).join('');
+  const body = OB.mode === 'add'
+    ? `<div class="sub">اختار نوع شغل ونضيفلك مشاريعه بمراحلها وكام مهمة تبدأ بيها. مشاريعك الحالية مش هتتلمس.</div><div class="tpl" data-grp="tpl">${tplBtns}</div>`
+    : `<div class="ob-hero"><img src="icons/any-192.png" alt=""><h2>أهلاً بيك في Focus</h2><div class="sub">مهامك ومشاريعك وعاداتك وتايمر للتركيز — في مكان واحد.<br>ظبّطه على شغلك في ثواني، وتقدر تغيّر كل حاجة بعدين.</div></div>
+      <label class="fld"><span>اسمك (اختياري)</span><input id="ob-name" class="inp" placeholder="بيظهر في التحية" autocomplete="off"></label>
+      <div class="fld"><span>شغلك إيه؟</span><div class="tpl" data-grp="tpl">${tplBtns}</div></div>
+      <div class="fld"><span>اختار لونك</span><div class="swatches" data-grp="obacc">${ACCENTS.map(([c, l]) => `<button type="button" class="sw" data-act="ob-accent" data-v="${c}" aria-pressed="${OB.accent === c}" style="background:${c}" aria-label="${l}" title="${l}"></button>`).join('')}</div></div>
+      <div class="fld"><span>الشريط اللي فوق</span><div class="styles" data-grp="obbar">${BARS.map(([b, l]) => `<button type="button" data-act="ob-bar" data-v="${b}" aria-pressed="${OB.bar === b}"><i class="obprev-${b}"></i>${l}</button>`).join('')}</div></div>`;
+  const foot = OB.mode === 'add' ? `<button class="btn primary grow" data-act="ob-go">ضيف المشاريع</button>` : `<button class="btn ghost" data-act="ob-skip">تخطّي</button><button class="btn primary grow" data-act="ob-go">يلا نبدأ</button>`;
+  openSheet(OB.mode === 'add' ? 'قوالب الشغل' : 'ظبّط Focus', body, foot);
+  paintObPreview();
+}
+function paintObPreview() {
+  document.querySelectorAll('.obprev-dark').forEach((e) => { e.style.background = '#141414'; });
+  document.querySelectorAll('.obprev-accent').forEach((e) => { e.style.background = OB.accent; });
+  document.querySelectorAll('.obprev-light').forEach((e) => { e.style.background = 'var(--surface)'; });
+}
+function finishOnboard(skip) {
+  if (OB.mode === 'add') { if (!OB.tpl) { toast('اختار نوع شغل'); return; } applyTemplate(OB.tpl, true); closeSheet(); view = 'projects'; render(); toast('اتضافت المشاريع ✓'); return; }
+  const t = TPL[skip ? 'blank' : OB.tpl] || TPL.blank;
+  const name = skip ? '' : ($('#ob-name')?.value || '').trim();
+  Object.assign(S.pref, { setupDone: true, userName: name, areaWork: t.work, areaLife: t.life, accent: skip ? (S.pref.accent || '#EE2E24') : OB.accent, bar: skip ? (S.pref.bar || 'dark') : OB.bar });
+  touch('pref', S.pref);
+  applyTemplate(skip ? 'blank' : OB.tpl, false);
+  closeSheet(); view = 'tasks'; filter = 'today'; render();
+  toast(name ? `أهلاً يا ${name} 👋` : 'يلا نبدأ 👋');
+}
 
 /* ---------- widget: Document PiP (desktop) → floating canvas video (mobile) → popup ---------- */
 let pipWin = null, vpip = null;
@@ -1669,6 +1819,15 @@ const ACT = {
   'ni-toggle': (el, id) => { readNote(); const it = D.items.find((x) => x.id === id); if (it) it.done = !it.done; $('#n-items').innerHTML = noteItemsHtml(); },
   'ni-del': (el, id) => { readNote(); D.items = D.items.filter((x) => x.id !== id); $('#n-items').innerHTML = noteItemsHtml(); },
   'del-note': () => { const n = S.notes[D.id]; onSheetClose = null; D = null; closeSheet(); if (!n) return; n.deleted = true; touch('note', n); render(); toast('الملاحظة اتمسحت', () => { n.deleted = false; touch('note', n); render(); }); },
+  /* themes & setup (public edition) */
+  'set-accent': (el, id, v) => { S.pref.accent = v; touch('pref', S.pref); pressIn(el); const pk = document.querySelector('.sw.pick'); if (pk) pk.setAttribute('aria-pressed', 'false'); applyAccent(); refreshSettings(); },
+  'set-bar': (el, id, v) => { S.pref.bar = v; touch('pref', S.pref); pressIn(el); applyAccent(); },
+  onboard: (el, id, v) => onboardSheet(v),
+  'ob-tpl': (el, id, v) => { OB.tpl = v; pressIn(el); },
+  'ob-accent': (el, id, v) => { OB.accent = v; pressIn(el); S.pref.accent = v; applyAccent(); paintObPreview(); },
+  'ob-bar': (el, id, v) => { OB.bar = v; pressIn(el); S.pref.bar = v; applyAccent(); },
+  'ob-go': () => finishOnboard(false),
+  'ob-skip': () => finishOnboard(true),
   /* settings */
   'pref-step': (el) => { const k = el.dataset.k, lim = { focus: [1, 180], short: [1, 60], long: [1, 90], longEvery: [2, 8] }[k]; const v = Math.max(lim[0], Math.min(lim[1], S.pref[k] + +el.dataset.v)); if (k === 'longEvery') { S.pref.longEvery = v; touch('pref', S.pref); } else applyPreset(k, v); refreshSettings(); },
   'pref-autoBreak': () => { S.pref.autoBreak = !S.pref.autoBreak; touch('pref', S.pref); refreshSettings(); },
@@ -1723,6 +1882,10 @@ async function onSubmit(e) {
   } else if (k === 'pick-new') {
     const v = $('#f-pick').value.trim(); if (!v) return;
     const t = addTask(v, { due: dkey() }); ACT['set-task'](null, t.id);
+  } else if (k === 'profile') {
+    S.pref.userName = $('#f-uname').value.trim();
+    S.pref.areaWork = $('#f-awork').value.trim() || AREAS.work; S.pref.areaLife = $('#f-alife').value.trim() || AREAS.life;
+    touch('pref', S.pref); render(); toast('اتحفظ ✓');
   } else if (k === 'sync') {
     const url = $('#f-surl').value.trim(), key = $('#f-skey').value;
     if (url && !/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) { toast('الرابط لازم يكون رابط Apps Script'); return; }
@@ -1747,6 +1910,7 @@ document.addEventListener('input', (e) => {
   } else if (e.target.id === 'noteSearch') { noteQ = e.target.value; render(); }
 });
 document.addEventListener('change', (e) => {
+  if (e.target.id === 'f-accent' && /^#[0-9a-f]{6}$/i.test(e.target.value)) { S.pref.accent = e.target.value; touch('pref', S.pref); applyAccent(); refreshSettings(); }
   if (e.target.id === 'f-date' && D) { D.due = e.target.value || null; $('[data-grp="due"]').querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === (D.due || '')))); }
   if (e.target.id === 'f-proj' && D) { D.projectId = e.target.value || null; const p = S.projects[D.projectId]; D.stage = p ? stageIdx(p) : null; $('#f-stage').innerHTML = stageChips(); $('#f-stage-wrap').hidden = !p; }
 });
@@ -1802,10 +1966,14 @@ if (WIDGET_MODE) {
     setTimeout(() => toast('المزامنة اتربطت على الجهاز ده ✓'), 300);
   }
 }
+$('#brandSub').textContent = CFG.brandSub || '';
+$('#brandSub').hidden = !CFG.brandSub;
+if (CFG.themes) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyAccent());
 save();
 render();
 syncNow();
 gRefresh();
+if (CFG.onboarding && !S.pref.setupDone && !WIDGET_MODE) setTimeout(() => onboardSheet(), 250);
 </script>
 </body>
 </html>

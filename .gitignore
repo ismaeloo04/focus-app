@@ -1,4 +1,5 @@
 .claude/
-tools/
+tools/*
 sync-key*.txt
 *.local.*
+!tools/build_public.py
