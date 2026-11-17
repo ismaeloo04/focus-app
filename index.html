@@ -223,10 +223,15 @@ h3 { font-size: 14.5px; font-weight: 700; }
 .tpick > button:first-child { flex: 1; min-width: 0; background: none; border: 0; text-align: start; padding: 6px; display: grid; gap: 2px; }
 .tpick .l { font-size: 11.5px; color: var(--muted); }
 .tpick b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.presets { display: grid; gap: 10px; width: 100%; max-width: 420px; }
-.pr-row { display: flex; align-items: center; gap: 10px; }
-.pr-row > span { font-size: 12.5px; color: var(--muted); width: 48px; flex: none; font-weight: 600; }
-.pr-row .chip { font-family: var(--f-ui); }
+.presets { display: grid; gap: 12px; width: 100%; max-width: 420px; container-type: inline-size; }
+/* duration presets: an even grid that always fits its column (label beside the chips, or above them when narrow) */
+.pr-row { display: grid; grid-template-columns: 56px minmax(0, 1fr); align-items: center; gap: 10px; }
+.pr-row > span { font-size: 12.5px; color: var(--muted); font-weight: 600; text-align: start; }
+.pr-row .chips { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 6px; overflow: visible; padding: 0; }
+.pr-row .chip { font-family: var(--f-ui); min-width: 0; padding: 8px 4px; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; }
+.pr-row .chip.wide { grid-column: span 2; }
+.pr-row .chip .i { width: 13px; height: 13px; flex: none; }
+@container (max-width: 400px) { .pr-row { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
 
 /* mini player + floating add button (phone / tablet) */
 .mini { position: fixed; z-index: 29; left: 50%; transform: translateX(-50%); width: min(728px, calc(100% - 20px)); bottom: calc(76px + env(safe-area-inset-bottom, 0px));
@@ -1094,11 +1099,11 @@ function timerPanel(where) {
   const t = T(), P = t.mode === 'pomo', task = S.tasks[t.taskId], ev = S.pref.longEvery;
   const dots = P ? `<div class="cyc">${Array.from({ length: ev }, (_, i) => `<i class="${i < (t.cycle % ev) || (t.cycle % ev === 0 && t.cycle > 0 && t.phase === 'long') ? 'on' : ''}"></i>`).join('')}</div>` : '';
   const pc = (k, v, on, red) => `<button type="button" class="chip ${red ? 'red' : ''}" data-act="preset" data-k="${k}" data-v="${v}" aria-pressed="${on}">${v} ${L("د")}</button>`;
-  const custom = (k, cur, list) => { const c = !list.includes(cur); return chip('custom', k, c ? `${L("مخصص")} · ${cur}` : L('مخصص'), c); };
+  const custom = (k, cur, list, wide) => { const c = !list.includes(cur); return chip('custom', k, c ? `${I.edit}<span dir="ltr">${cur}</span> ${L("د")}` : L('مخصص'), c, wide ? 'wide' : '').replace('<button ', `<button title="${L('مخصص')}" `); };
   const presets = P
-    ? `<div class="pr-row"><span>${L("التركيز")}</span><div class="chips">${[25, 45].map((v) => pc('focus', v, S.pref.focus === v, 1)).join('')}${custom('focus', S.pref.focus, [25, 45])}</div></div>
+    ? `<div class="pr-row"><span>${L("التركيز")}</span><div class="chips">${[25, 45].map((v) => pc('focus', v, S.pref.focus === v, 1)).join('')}${custom('focus', S.pref.focus, [25, 45], 1)}</div></div>
        <div class="pr-row"><span>${L("الراحة")}</span><div class="chips">${[5, 10, 15].map((v) => pc('short', v, S.pref.short === v)).join('')}${custom('short', S.pref.short, [5, 10, 15])}</div></div>`
-    : `<div class="pr-row"><span>${L("المدة")}</span><div class="chips">${[10, 15, 25, 45].map((v) => pc('timer', v, t.timerMin === v, 1)).join('')}${custom('timer', t.timerMin, [10, 15, 25, 45])}</div></div>`;
+    : `<div class="pr-row"><span>${L("المدة")}</span><div class="chips" style="--n:5">${[10, 15, 25, 45].map((v) => pc('timer', v, t.timerMin === v, 1)).join('')}${custom('timer', t.timerMin, [10, 15, 25, 45])}</div></div>`;
   return `<div class="tp">
     <div class="seg">${[['pomo', L('بومودورو')], ['timer', L('تايمر عادي')]].map(([v, l]) => `<button data-act="mode" data-v="${v}" aria-pressed="${t.mode === v}">${l}</button>`).join('')}</div>
     <div class="ring-wrap">${ringSvg()}<div class="ring-c"><div class="ph">${phaseName()}</div><div class="time" data-tm="time">${fmt(remaining())}</div>${dots}</div></div>
