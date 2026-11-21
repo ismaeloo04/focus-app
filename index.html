@@ -152,6 +152,16 @@ h3 { font-size: 14.5px; font-weight: 700; }
 .task .t { font-weight: 600; font-size: 14.5px; line-height: 1.5; overflow-wrap: anywhere; }
 .task.done .t { text-decoration: line-through; color: var(--muted); font-weight: 500; }
 .task .m { display: flex; flex-wrap: wrap; gap: 3px 12px; font-size: 12px; color: var(--muted); }
+/* note → tasks */
+.nt-list { display: grid; gap: 8px; }
+.nt-row { display: flex; gap: 8px; align-items: flex-start; background: var(--surface-2); border-radius: 12px; padding: 8px; }
+.nt-on { padding-top: 10px; } .nt-on input { width: 20px; height: 20px; accent-color: var(--red); }
+.nt-opts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.nt-opts .inp.date { width: auto; padding: 6px 8px; }
+.nt-tg { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); } .nt-tg input { width: 64px; padding: 6px 8px; }
+.nt-help { font-size: 12px; }
+.nt-btn { display: inline-flex; align-items: center; gap: 6px; } .nt-btn .i { width: 16px; height: 16px; }
+@media (max-width: 420px) { .nt-btn span { display: none; } }
 /* morning brief */
 .bcard { display: flex; align-items: center; gap: 12px; text-align: start; background: var(--surface); border: 1.5px solid var(--red); border-radius: var(--r-m); padding: 12px 14px; color: var(--ink); width: 100%; }
 .bcard .sun { font-size: 24px; } .bcard .s { color: var(--muted); font-size: 12.5px; } .bcard .i { color: var(--muted); }
@@ -1050,6 +1060,90 @@ function viewBrief() {
     ${days.length > 1 ? `<div class="chips wrap">${days.slice(-7).reverse().map((k) => chip('open-brief', k, k === td ? L('النهارده') : k.slice(8) + '/' + k.slice(5, 7), k === day)).join('')}</div>` : ''}
   </div>`;
 }
+/* ---------- note → tasks / habits (by hand, no AI needed) ----------
+   Every line becomes a task. Words in the line set it up:
+     النهارده / بكرة / بعد بكرة / السبت…الجمعة / الأسبوع الجاي / 25/11  → the date
+     ! مهم   !! عاجل
+     عادة: … (أو «عادة» في أول السطر) → a habit; a number in it is the daily count (عادة: مية 8 كوبايات)
+   Lines without a date are spread over the coming days (4 a day at most, counting what is already there). */
+const NT_DAYS = [[/(^|\s)(يوم\s+)?(ال)?(أحد|احد|حد)(?=\s|$)/, 0], [/(^|\s)(يوم\s+)?(ال)?(اتنين|إتنين|اثنين|إثنين)(?=\s|$)/, 1], [/(^|\s)(يوم\s+)?(ال)?(تلات|ثلاثاء|تلاتاء)(?=\s|$)/, 2],
+  [/(^|\s)(يوم\s+)?(ال)?(أربع|اربع|أربعاء|اربعاء)(?=\s|$)/, 3], [/(^|\s)(يوم\s+)?(ال)?(خميس)(?=\s|$)/, 4], [/(^|\s)(يوم\s+)?(ال)?(جمعة|جمعه)(?=\s|$)/, 5], [/(^|\s)(يوم\s+)?(ال)?(سبت)(?=\s|$)/, 6]];
+function noteToItems(n) {
+  const td = dkey(), load = {};
+  tasks().forEach((t) => { if (!t.done && t.due) load[t.due] = (load[t.due] || 0) + 1; });
+  const text = n.kind === 'list' ? (n.items || []).filter((x) => !x.done).map((x) => x.t).join('\n') : (n.body || '');
+  const out = [];
+  for (let line of text.split('\n')) {
+    line = line.replace(/^\s*([-•*▪◦–]|\d+[.)\-])\s*/, '').trim();
+    if (line.length < 2 || line.startsWith('←') || /[:：]$/.test(line)) continue;
+    const it = { on: true, kind: 'task', title: line, due: '', prio: 0, target: 1, days: [] };
+    if (/^#?\s*(عادة|عاده|habit)\s*[:：-]?\s*/i.test(it.title)) { it.kind = 'habit'; it.title = it.title.replace(/^#?\s*(عادة|عاده|habit)\s*[:：-]?\s*/i, ''); }
+    if (/!!\s*$/.test(it.title)) { it.prio = 2; it.title = it.title.replace(/\s*!!\s*$/, ''); } else if (/!\s*$/.test(it.title)) { it.prio = 1; it.title = it.title.replace(/\s*!\s*$/, ''); }
+    let t = ' ' + it.title + ' ';
+    const take = (re, fn) => { const m = t.match(re); if (m) { fn(m); t = t.replace(re, ' '); return true; } return false; };
+    if (it.kind === 'habit') {
+      { const m = t.match(/(\d+)\s*(مرات|مرة|مره|كوبايات|كوباية|صفحات|صفحة|دقيقة|دقايق|x|×)?(?=\s|$)/); if (m && !/دقيقة|دقايق/.test(m[2] || '')) it.target = Math.min(50, +m[1] || 1); }
+      NT_DAYS.forEach(([re, d]) => { if (re.test(t) && !/كل يوم/.test(t)) { it.days.push(d); t = t.replace(re, ' '); } });
+      t = t.replace(/كل يوم/, ' ');
+    } else {
+      take(/(^|\s)(النهارده|النهاردة|اليوم)(?=\s|$)/, () => { it.due = td; })
+        || take(/(^|\s)بعد\s+بكر[ةه](?=\s|$)/, () => { it.due = addDays(td, 2); })
+        || take(/(^|\s)بكر[ةه](?=\s|$)/, () => { it.due = addDays(td, 1); })
+        || take(/(^|\s)(ال)?(أسبوع|اسبوع)\s+(الجاي|اللي جاي)(?=\s|$)/, () => { let d = addDays(td, 1); while (parseD(d).getDay() !== 6) d = addDays(d, 1); it.due = d; })
+        || take(/(^|\s)(\d{1,2})\s*[/\-.]\s*(\d{1,2})(?=\s|$)/, (m) => { const y = parseD(td).getFullYear(); let d = `${y}-${pad(+m[3])}-${pad(+m[2])}`; if (d < addDays(td, -30)) d = `${y + 1}-${pad(+m[3])}-${pad(+m[2])}`; if (!isNaN(parseD(d))) it.due = d; })
+        || NT_DAYS.some(([re, wd]) => take(re, () => { let d = td; while (parseD(d).getDay() !== wd) d = addDays(d, 1); it.due = d; }));
+    }
+    it.title = t.replace(/\s+/g, ' ').trim() || line;
+    out.push(it);
+  }
+  out.filter((x) => x.kind === 'task' && x.due).forEach((x) => { load[x.due] = (load[x.due] || 0) + 1; });
+  out.filter((x) => x.kind === 'task' && !x.due).forEach((x) => { let d = td; while ((load[d] || 0) >= 4) d = addDays(d, 1); x.due = d; load[d] = (load[d] || 0) + 1; });
+  return out;
+}
+function noteTasksSheet(noteId) {
+  const n = S.notes[noteId]; if (!n) return;
+  const items = noteToItems(n);
+  if (!items.length) { toast(L('مفيش سطور تتحول — اكتب كل حاجة في سطر لوحدها')); return; }
+  D = { noteId, items };
+  const row = (x, i) => `<div class="nt-row" data-i="${i}">
+      <label class="nt-on"><input type="checkbox" data-nt="on" ${x.on ? 'checked' : ''} aria-label="${L("ضيفها")}"></label>
+      <div class="grow"><input class="inp" data-nt="title" value="${esc(x.title)}">
+        <div class="nt-opts"><div class="chips" data-grp="nt-kind-${i}">${chip('nt-kind', 'task', L('مهمة'), x.kind === 'task')}${chip('nt-kind', 'habit', L('عادة'), x.kind === 'habit')}</div>
+          <input type="date" class="inp date" data-nt="due" value="${x.due}" ${x.kind === 'habit' ? 'hidden' : ''} aria-label="${L("الميعاد")}">
+          <label class="nt-tg" ${x.kind === 'habit' ? '' : 'hidden'}>${L("مرات في اليوم")} <input type="number" min="1" max="50" class="inp" data-nt="target" value="${x.target}"></label></div></div></div>`;
+  const body = `<p class="s">${L("كل سطر بقى مهمة. غيّر اللي محتاج وشيل العلامة من اللي مش عاوزه.")}</p><div class="nt-list">${items.map(row).join('')}</div>
+    <p class="s nt-help">${L("الجاي: اكتب «بكرة» أو «السبت» أو 25/11 في السطر يتحط في يومه، و«!» مهم و«!!» عاجل، و«عادة:» في أول السطر تبقى عادة.")}</p>`;
+  const foot = `<span class="grow"></span><button class="btn primary" data-act="nt-save">${L("ضيف")} (${items.length})</button>`;
+  openSheet(L('حوّل الملاحظة لمهام'), body, foot);
+}
+function noteTasksSave() {
+  const n = S.notes[D.noteId]; if (!n) return closeSheet();
+  const rows = [...document.querySelectorAll('.nt-row')].map((el) => {
+    const x = D.items[+el.dataset.i], q = (k) => el.querySelector(`[data-nt="${k}"]`);
+    return { ...x, on: q('on').checked, title: q('title').value.trim(), due: q('due').value || '', target: Math.max(1, +q('target').value || 1) };
+  }).filter((x) => x.on && x.title);
+  let nt = 0, nh = 0;
+  rows.forEach((x, k) => {
+    if (x.kind === 'habit') {
+      if (habits().some((o) => o.name.trim() === x.title)) return;   // already there
+      const h ={ id: uid(), name: x.title, color: HCOLORS[(habits().length + k) % HCOLORS.length], target: x.target, days: x.days || [], log: {}, logAt: {}, createdAt: now() + k };
+      S.habits[h.id] = h; touch('habit', h); nh++;
+    } else {
+      const t = { id: uid(), title: x.title, notes: L('من ملاحظة') + ': ' + (n.title || ''), projectId: n.projectId || null, due: x.due || null, prio: x.prio || 0, repeat: '', est: 0, done: false, createdAt: now() + k };
+      S.tasks[t.id] = t; touch('task', t); nt++;
+    }
+  });
+  if (nt || nh) {
+    const mark = `← ${L("اتعملت")} ${nt ? nt + ' ' + L('مهام') : ''}${nt && nh ? ' ' + L('و') : ''}${nh ? nh + ' ' + L('عادات') : ''} (${dkey().slice(8)}/${dkey().slice(5, 7)})`;
+    if (n.kind !== 'list') n.body = String(n.body || '').replace(/\s+$/, '') + '\n\n' + mark;
+    else (n.items || []).forEach((it) => { if (!it.done) it.done = true; });
+    n.taskedTitles = [...(n.taskedTitles || []), ...rows.map((x) => x.title)].slice(-200);
+    n.tasked = now() + 2000;   // the daily Claude run skips notes already turned into tasks
+    touch('note', n);
+  }
+  onSheetClose = null; closeSheet(); render();
+  toast(nt || nh ? `${L("اتضاف")} ${nt} ${L("مهام")}${nh ? ` ${L("و")}${nh} ${L("عادات")}` : ''} ✓` : L('مفيش حاجة اتضافت'));
+}
 function viewTasks() {
   const td = dkey(), all = tasks(), open = all.filter((t) => !t.done);
   const cnt = {
@@ -1597,7 +1691,7 @@ function noteSheet(id, opts = {}) {
     <div id="n-main">${noteBody()}</div>
     <div class="fld"><span>${L("اللون")}</span><div class="swatches" data-grp="ncolor">${NCOLORS.map(([k, c]) => `<button type="button" class="sw" data-act="n-color" data-v="${k}" aria-pressed="${(D.color || '') === k}" style="background:${c}" aria-label="${L("لون")}"></button>`).join('')}</div></div>
     <label class="fld"><span>${L("المشروع")}</span><select id="n-proj" class="inp">${projOptions(D.projectId)}</select></label>`;
-  const foot = `${!isNew ? `<button class="icon-btn" data-act="del-note" aria-label="${L("امسح الملاحظة")}">${I.trash}</button>` : ''}<button class="icon-btn" data-act="n-kind" aria-label="${D.kind === 'list' ? L('خليها نص') : L('خليها قايمة')}" title="${D.kind === 'list' ? L('نص') : L('قايمة')}">${D.kind === 'list' ? I.text : I.list}</button><button class="icon-btn" data-act="n-pin" aria-pressed="${!!D.pinned}" aria-label="${L("ثبّت فوق")}">${I.pin}</button><span class="grow"></span><button class="btn primary" data-act="close-sheet">${L("تمام")}</button>`;
+  const foot = `${!isNew ? `<button class="icon-btn" data-act="del-note" aria-label="${L("امسح الملاحظة")}">${I.trash}</button>` : ''}<button class="icon-btn" data-act="n-kind" aria-label="${D.kind === 'list' ? L('خليها نص') : L('خليها قايمة')}" title="${D.kind === 'list' ? L('نص') : L('قايمة')}">${D.kind === 'list' ? I.text : I.list}</button><button class="icon-btn" data-act="n-pin" aria-pressed="${!!D.pinned}" aria-label="${L("ثبّت فوق")}">${I.pin}</button><span class="grow"></span><button class="btn ghost nt-btn" data-act="note-tasks">${I.tasks}<span>${L("حوّل لمهام")}</span></button><button class="btn primary" data-act="close-sheet">${L("تمام")}</button>`;
   openSheet(isNew ? L('ملاحظة جديدة') : L('ملاحظة'), body, foot, D.color ? 'nc-' + D.color : '');
   addTranslateBtn();
   onSheetClose = saveNote;
@@ -1923,6 +2017,9 @@ const ACT = {
   'show-done': () => { S.dev.showDone = !S.dev.showDone; save(); render(); },
   'show-arch': () => { S.dev.showArch = !S.dev.showArch; save(); render(); },
   'toggle-task': (el, id) => toggleTask(id),
+  'note-tasks': () => { const id = D && D.id; closeSheet(); if (id && S.notes[id]) noteTasksSheet(id); else toast(L('اكتب الملاحظة الأول')); },
+  'nt-save': () => noteTasksSave(),
+  'nt-kind': (el, id, v) => { const row = el.closest('.nt-row'); row.querySelectorAll('[data-act="nt-kind"]').forEach((b) => b.setAttribute('aria-pressed', String(b === el))); D.items[+row.dataset.i].kind = v; row.querySelector('[data-nt="due"]').hidden = v === 'habit'; row.querySelector('.nt-tg').hidden = v !== 'habit'; },
   'open-brief': (el, id, v) => { view = 'brief'; briefDay = v || null; closeSheet(); render(); scrollTo(0, 0); },
   'edit-task': (el, id) => { if (pipWin && el.ownerDocument === pipWin.document) window.focus(); taskSheet(id); },
   'focus-task': (el, id) => focusTask(id),

@@ -5,15 +5,12 @@
  *   1. reads the Graficoo app sheet (projects, money, clients) and this project's Focus data (tasks, notes, habits);
  *   2. turns Graficoo work into Focus tasks with fixed ids (late jobs, money to collect, quotes to follow up),
  *      and closes them by itself when the job is delivered / paid;
- *   3. if ANTHROPIC_API_KEY is set: one Claude call turns new or edited notes into tasks spread over the next days,
- *      and suggests growth tasks, a plan for the day and one line to start the day (without a key it still works);
+ *   3. adds a growth idea when none is open (notes → tasks are done by the daily Claude run with
+ *      Graficoo Brief/notes-tool.js, or by hand with «حوّل لمهام» in Focus);
  *   4. saves everything as a 'brief' record (id = the date). The Focus app shows it as «الملخص» (tick → done
  *      everywhere) and the PC sender renders it to an image + PDF and sends it on WhatsApp.
  *
- * Script properties (Project Settings → Script properties):
- *   ANTHROPIC_API_KEY   your Claude API key (console.anthropic.com) — optional
- *   BRIEF_MODEL         optional, default claude-opus-5-5
- *   GRAFICOO_SHEET_ID   optional, default the Graficoo_App_Data sheet
+ * Script property (optional): GRAFICOO_SHEET_ID — default the Graficoo_App_Data sheet.
  * Uses sheet_() and merge_() from Code.gs.
  */
 const BRIEF_GRAFICOO_SHEET = '1fkySEg2GtUVtwTi5dtE0bI8cNXC76p2vW1Q2xBLbvyc';
@@ -118,67 +115,16 @@ function buildBrief() {
     put('task', o);
   });
 
-  /* ---------- Claude: notes → tasks, growth, plan ---------- */
-  const key = props.getProperty('ANTHROPIC_API_KEY');
-  const doneNotes = JSON.parse(props.getProperty('BRIEF_NOTES') || '{}');
-  const firstRun = !props.getProperty('BRIEF_NOTES');
-  const newNotes = Object.keys(F.note).map(function (k) { return F.note[k]; }).filter(function (n) {
-    const text = noteText_(n);
-    if (!text || n.id === 'seed-n1' || doneNotes[n.id] === n.updatedAt) return false;
-    return !firstRun || nowMs - (n.updatedAt || 0) < 3 * 864e5;   // first run: only notes from the last 3 days
-  });
+  /* ---------- notes → tasks happen outside this job: the daily Claude run (notes-tool.js) or «حوّل لمهام» in Focus ----------
+     Growth idea when none is open: call a few clients who have been quiet. */
   const openTasks = Object.keys(F.task).map(function (k) { return F.task[k]; }).filter(function (t) { return !t.done && !t.deleted; });
-  const load = {}; openTasks.forEach(function (t) { if (t.due) load[t.due] = (load[t.due] || 0) + 1; });
   const growthOpen = openTasks.filter(function (t) { return t.brief && t.brief.sec === 'growth'; });
-  const dormant = C.filter(function (c) { return /Dormant|At Risk/i.test(String(c.activity)); }).slice(0, 12);
-  let ai = null, aiErr = '';
-  if (key) {
-    try {
-      ai = askClaude_(key, props.getProperty('BRIEF_MODEL') || 'claude-opus-5-5', {
-        today: today, weekday: Utilities.formatDate(new Date(), TZ, 'EEEE'),
-        notes: newNotes.map(function (n) { return { id: n.id, title: n.title || '', text: noteText_(n).slice(0, 3000) }; }),
-        tasksPerDay: Array.from({ length: 14 }, function (_, i) { const d = day(today, i); return d + ': ' + (load[d] || 0); }),
-        openTasks: openTasks.slice(0, 40).map(function (t) { return (t.due || 'بدون ميعاد') + ' — ' + t.title; }),
-        graficoo: { late: Object.keys(want).length, money: live.filter(function (p) { return Number(p.due) > 0; }).map(function (p) { return p.clientName + ': ' + fmt(p.due); }).slice(0, 10),
-          dormantClients: dormant.map(function (c) { return c.name + (c.company ? ' (' + c.company + ')' : '') + (c.lastDeal ? ' آخر شغل ' + c.lastDeal : ''); }),
-          recentJobs: live.slice(-8).map(function (p) { return p.desc; }) },
-        growthOpen: growthOpen.map(function (t) { return t.title; }),
-      });
-    } catch (err) { aiErr = String(err.message || err); Logger.log('Claude: ' + aiErr); }
+  const dormant = C.filter(function (c) { return /Dormant|At Risk/i.test(String(c.activity)); });
+  if (!growthOpen.length && dormant.length) {
+    const pick = dormant.slice((new Date().getDate() * 3) % Math.max(1, dormant.length - 2)).slice(0, 3);
+    put('task', { id: 'b-grow-' + today + '-0', title: 'كلّم 3 عملاء بقالهم فترة: ' + pick.map(function (c) { return c.name; }).join('، '), notes: '', projectId: null, due: today, prio: 0, repeat: '', est: 0, done: false, createdAt: nowMs,
+      brief: { sec: 'growth', meta: 'عرض جديد أو سؤال عن احتياجاتهم', tag: ['info', 'عملاء'] } });
   }
-  if (ai) {
-    const byNote = {};
-    (ai.tasks || []).forEach(function (x, k) {
-      const n = F.note[x.noteId]; if (!n || !x.title) return;
-      const due = /^\d{4}-\d{2}-\d{2}$/.test(x.due) && x.due >= today ? x.due : today;
-      put('task', { id: 'n-' + n.id + '-' + nowMs.toString(36) + '-' + k, title: x.title, notes: 'من ملاحظة: ' + (n.title || noteText_(n).slice(0, 40)), projectId: n.projectId || null,
-        due: due, prio: Math.max(0, Math.min(2, x.prio || 0)), repeat: '', est: 0, done: false, createdAt: nowMs, brief: { sec: 'note', meta: 'من ملاحظة «' + (n.title || noteText_(n).slice(0, 30)) + '»' } });
-      byNote[n.id] = (byNote[n.id] || 0) + 1;
-    });
-    newNotes.forEach(function (n) {
-      const c = byNote[n.id] || 0;
-      if (c && n.kind !== 'list') { n.body = String(n.body || '').replace(/\s+$/, '') + '\n\n← اتعملت ' + c + ' مهام في Focus (' + today.slice(8) + '/' + today.slice(5, 7) + ')'; put('note', n); }
-      doneNotes[n.id] = n.updatedAt;
-    });
-    (ai.growth || []).slice(0, Math.max(0, 3 - growthOpen.length)).forEach(function (g, k) {
-      put('task', { id: 'b-grow-' + today + '-' + k, title: g.title, notes: g.meta || '', projectId: null, due: today, prio: 0, repeat: '', est: 0, done: false, createdAt: nowMs,
-        brief: { sec: 'growth', meta: g.meta || '', tag: ['info', g.tag || 'تنمية'] } });
-    });
-  } else {
-    newNotes.forEach(function (n) {   // no AI: lines starting with - / • become tasks for today
-      const lines = noteText_(n).split('\n').map(function (s) { return s.trim(); }).filter(function (s) { return /^[-•*]\s*\S/.test(s); });
-      if (!lines.length) return;
-      lines.forEach(function (s, k) {
-        put('task', { id: 'n-' + n.id + '-' + nowMs.toString(36) + '-' + k, title: s.replace(/^[-•*]\s*/, ''), notes: 'من ملاحظة', projectId: n.projectId || null, due: today, prio: 0, repeat: '', est: 0, done: false, createdAt: nowMs, brief: { sec: 'note', meta: 'من ملاحظة «' + (n.title || '') + '»' } });
-      });
-      doneNotes[n.id] = n.updatedAt;
-    });
-    if (!growthOpen.length && dormant.length) {
-      put('task', { id: 'b-grow-' + today + '-0', title: 'كلّم 3 عملاء بقالهم فترة: ' + dormant.slice(0, 3).map(function (c) { return c.name; }).join('، '), notes: '', projectId: null, due: today, prio: 0, repeat: '', est: 0, done: false, createdAt: nowMs,
-        brief: { sec: 'growth', meta: 'عرض جديد أو سؤال عن احتياجاتهم', tag: ['info', 'عملاء'] } });
-    }
-  }
-  props.setProperty('BRIEF_NOTES', JSON.stringify(doneNotes));
 
   /* ---------- the brief record ---------- */
   const all = Object.keys(F.task).map(function (k) { return F.task[k]; });
@@ -199,13 +145,13 @@ function buildBrief() {
     .map(function (h) { return { id: h.id, name: h.name, target: h.target || 1, yday: (h.log && h.log[yday]) || 0, color: h.color || '' }; });
   const late = open.filter(function (p) { return p.delivery && p.delivery < today; }).length;
   const brief = {
-    id: today, date: today, createdAt: nowMs, ai: !!ai, aiErr: aiErr ? aiErr.slice(0, 200) : '',
+    id: today, date: today, createdAt: nowMs, ai: false,
     stats: [[String(open.length), 'مشاريع مفتوحة', ''], [String(late), 'تسليمات متأخرة', late ? 'r' : ''], [fmt(money.reduce(function (a, m) { return a + m.amount; }, 0)) + 'ج', 'فلوس برا', 'r'],
       [String(live.filter(function (p) { return stageNo(p) === 1; }).length), 'عروض مستنية رد', '']],
     top: top.map(function (id) { return card(F.task[id]); }),
     sections: [['مهامك النهارده', mine.sort(function (a, b) { return (b.prio || 0) - (a.prio || 0); }).slice(0, 8).map(card)], ['المشاريع والعملاء', sec('proj')], ['من ملاحظاتك', sec('note')], ['تنمية جرافيكوو', sec('growth')]],
     moneyRows: money.slice(0, 8), moneyNow: moneyNow, habits: habits,
-    plan: ai && ai.plan ? ai.plan.slice(0, 6) : [], quote: (ai && ai.quote) || BRIEF_QUOTES[new Date().getDate() % BRIEF_QUOTES.length],
+    plan: [], quote: BRIEF_QUOTES[new Date().getDate() % BRIEF_QUOTES.length],
     links: { focus: BRIEF_FOCUS + '?brief=' + today, app: BRIEF_APP },
   };
   // money tasks also appear in the money section (as tickable rows above the table)
@@ -213,13 +159,8 @@ function buildBrief() {
   put('brief', brief);
   step('brief built');
   focusWrite_(out);
-  Logger.log('Brief ' + today + ': ' + out.length + ' items written, AI ' + (ai ? 'on' : 'off' + (aiErr ? ' (' + aiErr + ')' : '')));
+  Logger.log('Brief ' + today + ': ' + out.length + ' items written');
   return brief;
-}
-
-function noteText_(n) {
-  const items = (n.items || []).filter(function (x) { return !x.done && x.t; }).map(function (x) { return '- ' + x.t; }).join('\n');
-  return String((n.kind === 'list' ? items : n.body) || items || '').replace(/\n*← اتعملت[^\n]*$/g, '').trim();
 }
 
 /** Writes items into the Focus sheet the same way a device sync does (newest updatedAt wins). */
@@ -240,41 +181,4 @@ function focusWrite_(list) {
     if (res.changed && rows.length) sh.getRange(2, 1, rows.length, 5).setValues(rows);
     if (res.appends.length) sh.getRange(last + 1, 1, res.appends.length, 5).setValues(res.appends);
   } finally { lock.releaseLock(); }
-}
-
-/** One Claude call (raw HTTP — Apps Script has no Anthropic SDK) with a JSON-schema answer. */
-function askClaude_(key, model, ctx) {
-  const schema = {
-    type: 'object', additionalProperties: false, required: ['tasks', 'growth', 'plan', 'quote'],
-    properties: {
-      tasks: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['noteId', 'title', 'due', 'prio'],
-        properties: { noteId: { type: 'string' }, title: { type: 'string' }, due: { type: 'string' }, prio: { type: 'integer' } } } },
-      growth: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['title', 'meta', 'tag'],
-        properties: { title: { type: 'string' }, meta: { type: 'string' }, tag: { type: 'string' } } } },
-      plan: { type: 'array', items: { type: 'array', items: { type: 'string' } } },
-      quote: { type: 'string' },
-    },
-  };
-  const system = 'انت مساعد شخصي لصاحب ستوديو جرافيكوو (تصميم وطباعة في سمالوط، المنيا). بتكتب بالعامية المصرية، جمل قصيرة وعملية.\n'
-    + 'المطلوب منك JSON بس:\n'
-    + '- tasks: حوّل كل ملاحظة في notes لمهام صغيرة واضحة تبدأ بفعل (اعمل، كلّم، اشتري...). noteId هو id الملاحظة. وزّع المواعيد (due بصيغة YYYY-MM-DD من النهارده لقدام) على الأيام الجاية بحيث مفيش يوم يزيد عن 5 مهام بالمهام اللي موجودة أصلاً (tasksPerDay). لو الملاحظة فيها ميعاد (بكرة، السبت، آخر الشهر) التزم بيه. prio: 0 عادي، 1 مهم، 2 عاجل. لو الملاحظة مجرد معلومة أو فكرة مش مطلوب فيها فعل، متطلعش منها مهام.\n'
-    + '- growth: من 0 لـ 2 مهام لتنمية البيزنس النهارده، مبنية على البيانات (عملاء خاملين، شغل حديث ينفع يتعرض، خدمات). متكررش حاجة موجودة في growthOpen. title قصير، meta سطر واحد ليه، tag كلمة (سوشيال، عملاء، أسعار، تسويق).\n'
-    + '- plan: من 3 لـ 5 خانات لليوم، كل خانة [الساعة، اللي يتعمل] زي ["10:00", "تسليمات وتحصيل"]. اليوم الشغل من 10 الصبح لحد 11 بالليل، وفيه مشي ووقت راحة.\n'
-    + '- quote: جملة تحفيزية واحدة قصيرة بالعامية، مش مبتذلة.';
-  const body = {
-    model: model, max_tokens: 16000,
-    output_config: { effort: 'low', format: { type: 'json_schema', schema: schema } },
-    fallbacks: 'default',
-    system: system,
-    messages: [{ role: 'user', content: JSON.stringify(ctx) }],
-  };
-  const res = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
-    method: 'post', contentType: 'application/json', muteHttpExceptions: true, payload: JSON.stringify(body),
-    headers: { 'x-api-key': key, 'anthropic-version': '2026-10-21', 'anthropic-beta': 'server-side-fallback-2026-07-01' },
-  });
-  const code = res.getResponseCode(), j = JSON.parse(res.getContentText() || '{}');
-  if (code !== 200) throw new Error('HTTP ' + code + ' ' + ((j.error && j.error.message) || ''));
-  if (j.stop_reason === 'refusal') throw new Error('refusal');
-  const text = (j.content || []).filter(function (b) { return b.type === 'text'; }).map(function (b) { return b.text; }).join('');
-  return JSON.parse(text);
 }
