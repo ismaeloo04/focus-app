@@ -152,6 +152,40 @@ h3 { font-size: 14.5px; font-weight: 700; }
 .task .t { font-weight: 600; font-size: 14.5px; line-height: 1.5; overflow-wrap: anywhere; }
 .task.done .t { text-decoration: line-through; color: var(--muted); font-weight: 500; }
 .task .m { display: flex; flex-wrap: wrap; gap: 3px 12px; font-size: 12px; color: var(--muted); }
+/* morning brief */
+.bcard { display: flex; align-items: center; gap: 12px; text-align: start; background: var(--surface); border: 1.5px solid var(--red); border-radius: var(--r-m); padding: 12px 14px; color: var(--ink); width: 100%; }
+.bcard .sun { font-size: 24px; } .bcard .s { color: var(--muted); font-size: 12.5px; } .bcard .i { color: var(--muted); }
+.bback { justify-self: start; } .bback .i { transform: scaleX(-1); }
+.bhello h1 { font-size: 24px; }
+.bstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; position: relative; z-index: 1; }
+.bstats div { background: var(--bar-2); border-radius: 12px; padding: 10px; display: grid; gap: 2px; min-width: 0; }
+.bstats b { font-size: 17px; font-weight: 800; white-space: nowrap; } .bstats .r b { color: var(--red); } .bstats span { font-size: 11px; color: var(--bar-muted); line-height: 1.35; }
+.bbar { width: 6px; height: 18px; border-radius: 3px; background: var(--red); display: inline-block; }
+.card.bl { padding: 4px 14px; gap: 0; } .card.btop { border: 2px solid var(--ink); }
+.brow { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+.brow:last-child { border-bottom: 0; }
+.bck { width: 30px; height: 30px; flex: none; background: none; border: 0; padding: 0; display: grid; place-items: center; margin-top: -3px; }
+.bck > span { width: 21px; height: 21px; border: 2px solid var(--ink); border-radius: 6px; display: grid; place-items: center; color: transparent; transition: background .15s; }
+.bck .i { width: 14px; height: 14px; stroke-width: 3; }
+.bck.off > span { border-style: dashed; border-color: var(--muted); }
+.brow.done .bck > span { background: var(--ink); color: var(--surface); }
+.bt { font-weight: 700; font-size: 14.5px; line-height: 1.55; overflow-wrap: anywhere; }
+.bt .bn { color: var(--red); margin-inline-end: 6px; }
+.brow.done .tx { text-decoration: line-through; text-decoration-thickness: 1px; text-decoration-color: var(--red); color: var(--muted); font-weight: 500; }
+.brow.done .bm, .brow.done .bchips { opacity: .5; }
+.bm { color: var(--muted); font-size: 12.5px; margin-top: 2px; line-height: 1.55; }
+.btag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; white-space: nowrap; vertical-align: 1px; }
+.btag.bad { background: var(--red); color: #fff; } .btag.warn { background: var(--red-soft); color: var(--red-ink); } .btag.info { background: var(--ink); color: var(--surface); } .btag.muted { background: var(--surface-2); color: var(--muted); }
+.bchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.bchip { font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 99px; background: var(--surface-2); color: var(--ink); text-decoration: none; }
+.bchip.wa { background: #E7F7EC; color: #0E7A39; }
+.btbl { width: 100%; border-collapse: collapse; margin: 4px 0; }
+.btbl td { padding: 9px 0; border-top: 1px solid var(--line); vertical-align: top; font-size: 13.5px; }
+.btbl td.amt { font-weight: 800; text-align: center; white-space: nowrap; padding-inline: 8px; } .btbl td.amt.bad { color: var(--red); } .btbl td.amt.muted { color: var(--muted); }
+.btbl td:last-child { text-align: end; }
+.btotal { display: flex; justify-content: space-between; background: var(--ink); color: var(--surface); border-radius: 10px; padding: 10px 14px; margin: 6px 0 10px; font-weight: 700; }
+.bslot { display: flex; gap: 14px; padding: 9px 0; border-bottom: 1px dashed var(--line); font-weight: 600; } .bslot:last-child { border: 0; } .bslot b { color: var(--red); min-width: 48px; direction: ltr; text-align: end; }
+.bquote { background: var(--surface-2); border-inline-start: 4px solid var(--red); border-radius: 12px; padding: 14px 16px; font-weight: 600; line-height: 1.7; }
 .task .m span { display: inline-flex; align-items: center; gap: 4px; }
 .task .m .i { width: 13px; height: 13px; }
 .task .m .late { color: var(--red-ink); font-weight: 700; }
@@ -581,10 +615,10 @@ const LS = CFG.storageKey;
 const DEF_PREF = { id: 'pref', focus: 25, short: 5, long: 15, longEvery: 4, autoBreak: true, autoFocus: false, updatedAt: 0 };
 const DEF_DEV = { theme: 'auto', sound: true, vibrate: true, wake: false, notify: false, syncUrl: '', syncKey: '', since: 0, lastSync: 0, showDone: false, collapsed: {}, gUrl: G_DEFAULT_URL, gToken: '', gName: '', gLast: 0 };
 const defaultTimer = () => ({ id: 'timer', mode: 'pomo', phase: 'focus', dur: 25 * 60000, left: 25 * 60000, endAt: null, running: false, startedAt: null, taskId: null, cycle: 0, timerMin: 25, updatedAt: 0 });
-const COLLS = [['project', 'projects'], ['task', 'tasks'], ['session', 'sessions'], ['note', 'notes'], ['habit', 'habits']];
+const COLLS = [['project', 'projects'], ['task', 'tasks'], ['session', 'sessions'], ['note', 'notes'], ['habit', 'habits'], ['brief', 'briefs']];
 function seed() {
   const t = dkey(), base = { updatedAt: 1, createdAt: 1 };
-  const S0 = { projects: {}, tasks: {}, sessions: {}, notes: {}, habits: {}, timer: defaultTimer(), pref: { ...DEF_PREF }, dev: { ...DEF_DEV }, dirty: {} };
+  const S0 = { projects: {}, tasks: {}, sessions: {}, notes: {}, habits: {}, briefs: {}, timer: defaultTimer(), pref: { ...DEF_PREF }, dev: { ...DEF_DEV }, dirty: {} };
   if (CFG.onboarding) return S0; // the setup sheet fills it from a job template
   S0.projects['seed-p2'] = { id: 'seed-p2', name: L('البيت والحياة'), area: 'life', color: '#8A8A8E', stages: DEF_STAGES.life.slice(), stage: 1, ...base };
   const mk = (id, title, projectId, extra) => (S0.tasks[id] = { id, title, notes: '', projectId, due: t, prio: 0, repeat: '', est: 0, done: false, ...base, ...extra });
@@ -691,7 +725,8 @@ const params = new URLSearchParams(location.search);
 const WIDGET_MODE = params.has('widget');
 let view = 'tasks', filter = 'today', projId = null, projFilter = 'open', noteQ = '', noteProj = '';
 const isWide = () => matchMedia('(min-width: 1000px)').matches;
-const VIEWS = ['tasks', 'projects', 'project', 'timer', 'habits', 'notes', 'stats'];
+const VIEWS = ['tasks', 'projects', 'project', 'timer', 'habits', 'notes', 'stats', 'brief'];
+let briefDay = null;
 
 /* ---------- timer ---------- */
 const T = () => S.timer;
@@ -975,6 +1010,46 @@ function deliveries() {
   return `<div class="block"><div class="sec-head"><h3>${I.truck} ${L("تسليمات جرافيكوو")}</h3><span class="c">${ps.length}</span></div><div class="list">${ps.map((p) => `<button class="srow" data-act="open-project" data-id="${esc(p.id)}"><span class="grow"><b>${esc(p.name)}</b><br><span class="s">${esc(p.client)} · ${esc(stageName(p))}</span></span><span class="tag ${p.delivery < td ? 'red' : p.delivery === td ? 'dark' : ''}">${p.delivery < td ? L('متأخر · ') : ''}${dueLabel(p.delivery)}</span></button>`).join('')}</div></div>`;
 }
 
+/* ---------- the morning brief (made each morning by Brief.gs on the sync script) ---------- */
+function briefCard(td) {
+  const b = CFG.graficoo && S.briefs[td];
+  if (!b || !live(b)) return '';
+  const ids = [...(b.top || []), ...(b.sections || []).flatMap((s) => s[1])].map((x) => x.id).filter((id) => S.tasks[id]);
+  const done = ids.filter((id) => S.tasks[id].done).length;
+  return `<button class="bcard" data-act="open-brief" data-v="${esc(td)}"><span class="sun">☀️</span><span class="grow"><b>${L("ملخص النهارده")}</b><br><span class="s">${done}/${ids.length} ${L("خلصت")}${b.moneyNow ? ` · ${L("مستحق")} ${Number(b.moneyNow).toLocaleString('en-US')}${L("ج")}` : ''}</span></span>${I.chev}</button>`;
+}
+function briefRow(x, n) {
+  const t = S.tasks[x.id], done = !!(t && t.done);
+  const tag = x.tag ? `<span class="btag ${esc(x.tag[0])}">${esc(x.tag[1])}</span>` : '';
+  const links = (x.links || []).map(([l, h]) => `<a class="bchip ${/wa\.me/.test(h) ? 'wa' : ''}" href="${esc(h)}" target="_blank" rel="noopener">${esc(l)}</a>`).join('');
+  return `<div class="brow ${done ? 'done' : ''}">
+    ${t ? `<button class="bck" data-act="toggle-task" data-id="${esc(x.id)}" aria-pressed="${done}" aria-label="${done ? L('رجّعها') : L('خلصت')}"><span>${I.check}</span></button>` : '<span class="bck off"><span></span></span>'}
+    <div class="grow"><div class="bt">${n ? `<b class="bn">${n}</b>` : ''}<span class="tx">${esc(t ? t.title : x.title)}</span> ${tag}</div>${x.meta ? `<div class="bm">${esc(x.meta)}</div>` : ''}${links ? `<div class="bchips">${links}</div>` : ''}</div></div>`;
+}
+function viewBrief() {
+  const td = dkey(), days = Object.keys(S.briefs).filter((k) => live(S.briefs[k])).sort();
+  const day = briefDay && S.briefs[briefDay] ? briefDay : S.briefs[td] ? td : days[days.length - 1];
+  const b = day && S.briefs[day];
+  const back = `<button class="link bback" data-act="nav" data-v="tasks">${I.chev} ${L("المهام")}</button>`;
+  if (!b) return `<div class="block">${back}<div class="card empty">${L("لسه مفيش ملخص — بيتعمل كل يوم الساعة 8 الصبح.")}</div></div>`;
+  const d = parseD(day), money = b.moneyRows || [];
+  const sec = (title, list, extra = '') => list.length || extra ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${title}</h3></div><div class="card bl">${list.map((x) => briefRow(x)).join('')}${extra}</div></div>` : '';
+  const moneyTbl = money.length ? `<table class="btbl">${money.map((m) => `<tr><td><b>${esc(m.name)}</b><div class="bm">${esc(m.desc)}</div></td><td class="amt ${esc(m.lvl)}">${Number(m.amount).toLocaleString('en-US')}${L("ج")}</td><td class="bm">${esc(m.when)}</td></tr>`).join('')}</table>` : '';
+  const sections = (b.sections || []).map(([title, list]) => title === 'فلوس محتاجة تتحصّل'
+    ? sec(L(title), list, moneyTbl + (b.moneyNow ? `<div class="btotal"><span>${L("المستحق دلوقتي")}</span><b>${Number(b.moneyNow).toLocaleString('en-US')}${L("ج")}</b></div>` : ''))
+    : sec(L(title), list)).join('');
+  const plan = (b.plan || []).length ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${L("شكل اليوم المقترح")}</h3></div><div class="card bl">${b.plan.map(([h, x]) => `<div class="bslot"><b>${esc(h)}</b><span>${esc(x)}</span></div>`).join('')}</div></div>` : '';
+  return `<div class="block">${back}
+    <div class="hello bhello"><div class="eyebrow">${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}${day !== td ? ' · ' + L('ملخص قديم') : ''}</div><h1>☀️ ${L("ده يومك")}</h1>
+      <div class="bstats">${(b.stats || []).map(([v, l, r]) => `<div class="${r ? 'r' : ''}"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('')}</div></div>
+    ${(b.top || []).length ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${L("أهم 3 حاجات النهارده")}</h3></div><div class="card bl btop">${b.top.map((x, i) => briefRow(x, i + 1)).join('')}</div></div>` : ''}
+    ${sections}
+    ${habitPills(day)}
+    ${plan}
+    ${b.quote ? `<div class="bquote">«${esc(b.quote)}»</div>` : ''}
+    ${days.length > 1 ? `<div class="chips wrap">${days.slice(-7).reverse().map((k) => chip('open-brief', k, k === td ? L('النهارده') : k.slice(8) + '/' + k.slice(5, 7), k === day)).join('')}</div>` : ''}
+  </div>`;
+}
 function viewTasks() {
   const td = dkey(), all = tasks(), open = all.filter((t) => !t.done);
   const cnt = {
@@ -996,7 +1071,7 @@ function viewTasks() {
     body += `<div class="hello"><div class="eyebrow">${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}</div><h1>${greet()}</h1>
       <div class="sub">${n ? `${L("قدامك")} ${n} ${n > 10 ? L('مهمة') : L('مهام')} ${L("النهارده ")}${late.length ? ` (${L("فيه متأخر)")}` : ''}` : L('مفيش مهام النهارده — ضيف واحدة وابدأ')}</div>
       <div class="stats3"><button class="stat" data-act="nav" data-v="stats"><b>${fm.v}</b><span>${fm.u} ${L("تركيز")}</span></button><button class="stat" data-act="filter" data-v="done"><b>${doneToday.length}</b><span>${L("مهام خلصت")}</span></button><button class="stat" data-act="nav" data-v="habits"><b>${hs.length ? `${hd}/${hs.length}` : streak()}</b><span>${hs.length ? L('عادات النهارده') : L('يوم ورا بعض')}</span></button></div></div>`;
-    body += habitPills(td) + deliveries();
+    body += briefCard(td) + habitPills(td) + deliveries();
     body += quickAdd(L('أضف مهمة للنهارده…'));
     body += section(L('متأخرة'), late) + section(L('النهارده'), today);
     if (!late.length && !today.length) body += `<div class="card empty"><b>${L("يومك فاضي")}</b>${L("اكتب أول مهمة فوق، أو شوف «الجاي» و«من غير مشروع».")}</div>`;
@@ -1181,7 +1256,7 @@ function viewStats() {
     <div class="block"><div class="sec-head"><h3>${L("آخر الجلسات")}</h3></div>${recent.length ? `<div class="list">${recent.map((s) => { const k = S.tasks[s.taskId]; return `<div class="srow"><span class="grow">${k ? esc(k.title) : s.kind === 'timer' ? L('تايمر') : L('تركيز')}${s.partial ? L(' <span class="s">(اتقطعت)</span>') : ''}<br><span class="s">${dueLabel(s.day)} · ${clock(s.start)}</span></span><b class="num">${s.minutes} ${L("د")}</b></div>`; }).join('')}</div>` : L('<div class="card empty">ابدأ أول جلسة تركيز وهتلاقيها هنا.</div>')}</div>`;
 }
 
-const navCur = (v) => view === v || (v === 'projects' && view === 'project');
+const navCur = (v) => view === v || (v === 'projects' && view === 'project') || (v === 'tasks' && view === 'brief');
 function railHtml() {
   const td = dkey(), open = tasks().filter((t) => !t.done), n = open.filter((t) => t.due && t.due <= td).length;
   const hsT = habits().filter((h) => !h.archived && scheduled(h, td)), hLeft = hsT.filter((h) => !hDone(h, td)).length;
@@ -1291,7 +1366,7 @@ function render() {
   const act = document.activeElement, keep = act && act.id && act.tagName === 'INPUT' && !act.closest('.sheet') ? { id: act.id, v: act.value, s: act.selectionStart } : null;
   const wide = isWide();
   if (!VIEWS.includes(view)) view = 'tasks';
-  $('#main').innerHTML = view === 'tasks' ? viewTasks() : view === 'projects' ? viewProjects() : view === 'project' ? viewProject() : view === 'stats' ? viewStats() : view === 'habits' ? viewHabits() : view === 'notes' ? viewNotes() : viewTimer();
+  $('#main').innerHTML = view === 'tasks' ? viewTasks() : view === 'projects' ? viewProjects() : view === 'project' ? viewProject() : view === 'stats' ? viewStats() : view === 'habits' ? viewHabits() : view === 'notes' ? viewNotes() : view === 'brief' ? viewBrief() : viewTimer();
   $('#main').querySelectorAll('input:not([dir]), textarea:not([dir])').forEach((e) => { e.dir = 'auto'; });
   $('#layout').classList.toggle('v-full', view === 'timer');
   $('#rail').innerHTML = wide ? railHtml() : '';
@@ -1848,6 +1923,7 @@ const ACT = {
   'show-done': () => { S.dev.showDone = !S.dev.showDone; save(); render(); },
   'show-arch': () => { S.dev.showArch = !S.dev.showArch; save(); render(); },
   'toggle-task': (el, id) => toggleTask(id),
+  'open-brief': (el, id, v) => { view = 'brief'; briefDay = v || null; closeSheet(); render(); scrollTo(0, 0); },
   'edit-task': (el, id) => { if (pipWin && el.ownerDocument === pipWin.document) window.focus(); taskSheet(id); },
   'focus-task': (el, id) => focusTask(id),
   'new-task': () => taskSheet(null),
@@ -2072,7 +2148,9 @@ if (WIDGET_MODE) {
 } else {
   const st = +params.get('start');
   if (st > 0) { const t = T(); logPartial(); t.mode = 'pomo'; S.pref.focus = Math.min(600, st); touch('pref', S.pref); setPhase('focus', true); view = 'timer'; }
-  if (params.has('new')) setTimeout(() => taskSheet(null), 100);
+  if (params.has('new')) setTimeout(() => taskSheet(null, params.get('new') ? { title: params.get('new').slice(0, 200), due: /^\d{4}-\d{2}-\d{2}$/.test(params.get('due') || '') ? params.get('due') : dkey() } : undefined), 100);
+  if (params.get('brief') && CFG.graficoo) { view = 'brief'; briefDay = /^\d{4}-\d{2}-\d{2}$/.test(params.get('brief')) ? params.get('brief') : null; }
+  if (params.has('brief')) history.replaceState(null, '', location.pathname);
   if (params.has('start') || params.has('new')) history.replaceState(null, '', location.pathname);
   // one-tap setup on a new device: …/#sync=<apps script url>&key=<secret> (the hash never reaches the web server)
   const h = new URLSearchParams(location.hash.slice(1));
