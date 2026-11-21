@@ -18,11 +18,12 @@ const BRIEF_APP = 'https://ismaeloo04.github.io/graficoo-app/';
 const BRIEF_FOCUS = 'https://ismaeloo04.github.io/focus-app/';
 const BRIEF_QUOTES = ['مش لازم تعمل كل حاجة — اعمل الـ 3 الأولانيين، والباقي مكسب.', 'الفلوس اللي برا محتاجة مكالمة، مش استنى.', 'حاجة صغيرة كل يوم أحسن من حاجة كبيرة كل شهر.', 'خلّص الأصعب الأول وانت لسه فايق.', 'اقفل الشغل في ميعاده — بكرة محتاجك فايق.'];
 
-/** Run once from the editor: daily trigger at 8:00 (removes older brief triggers first). */
+/** Run once from the editor: daily triggers — build at 8:00, email at ~9:45 (removes older ones first). */
 function installBriefTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'buildBrief') ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('buildBrief').timeBased().everyDays(1).atHour(8).nearMinute(0).inTimezone(TZ).create();
   Logger.log('Brief trigger set for 8:00 every day');
+  installBriefEmailTrigger();   // and the email at ~9:45
 }
 
 function buildBrief() {
