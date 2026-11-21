@@ -182,3 +182,115 @@ function focusWrite_(list) {
     if (res.appends.length) sh.getRange(last + 1, 1, res.appends.length, 5).setValues(res.appends);
   } finally { lock.releaseLock(); }
 }
+
+/* ===================== the brief by email (free, runs on Google — no PC, no WhatsApp) =====================
+   installBriefEmailTrigger() once: sendBriefEmail every day around 9:45 (after the Claude notes run at ~9:16).
+   Script property BRIEF_EMAIL = where it goes (default: this Google account). testBriefEmail() sends it now. */
+function installBriefEmailTrigger() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'sendBriefEmail') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('sendBriefEmail').timeBased().everyDays(1).atHour(9).nearMinute(45).inTimezone(TZ).create();
+  Logger.log('Brief email trigger set for ~9:45 every day → ' + briefEmailTo_());
+}
+function testBriefEmail() { sendBriefEmail(true); }
+function briefEmailTo_() { return PropertiesService.getScriptProperties().getProperty('BRIEF_EMAIL') || Session.getEffectiveUser().getEmail(); }
+
+function sendBriefEmail(force) {
+  force = force === true;
+  const props = PropertiesService.getScriptProperties();
+  const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  if (!force && props.getProperty('BRIEF_EMAILED') === today) return;
+  let b = null;
+  const sh = sheet_(), last = sh.getLastRow();
+  (last > 1 ? sh.getRange(2, 1, last - 1, 5).getValues() : []).forEach(function (r) {
+    if (r[0] === 'brief' && String(r[1]) === today) { try { b = JSON.parse(r[4]); } catch (e) { /* ignore */ } }
+  });
+  if (!b) b = buildBrief();   // the 8:00 run did not happen: make it now
+  const html = briefHtml_(b);
+  const pdf = HtmlService.createHtmlOutput(html).getBlob().getAs('application/pdf').setName('ملخص ' + today + '.pdf');
+  const top = (b.top || []).length;
+  MailApp.sendEmail({
+    to: briefEmailTo_(), name: 'Graficoo — ملخص الصبح',
+    subject: '☀️ ملخص ' + briefDateAr_(today) + (top ? ' — ' + top + ' حاجات مهمة' : '') + (b.moneyNow ? ' · مستحق ' + Number(b.moneyNow).toLocaleString('en-US') + 'ج' : ''),
+    htmlBody: html, attachments: [pdf],
+  });
+  props.setProperty('BRIEF_EMAILED', today);
+  Logger.log('Brief email sent to ' + briefEmailTo_());
+}
+
+function briefDateAr_(d) {
+  const x = new Date(d + 'T12:00:00');
+  const days = ['الأحد', 'الاتنين', 'التلات', 'الأربع', 'الخميس', 'الجمعة', 'السبت'];
+  const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  return days[x.getDay()] + ' ' + x.getDate() + ' ' + months[x.getMonth()];
+}
+
+/** The brief as email-safe HTML (inline styles, tables) — the same HTML becomes the PDF. */
+function briefHtml_(b) {
+  const esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+  const money = function (n) { return Math.round(Number(n) || 0).toLocaleString('en-US') + 'ج'; };
+  const RED = '#EE2E24', INK = '#141414', G1 = '#F3F3F3', G2 = '#E6E6E6', MUT = '#6B6B6B';
+  const F = "font-family:Tahoma,'Segoe UI',Arial,sans-serif;";
+  const focus = (b.links && b.links.focus) || BRIEF_FOCUS;
+  const tagCss = { bad: 'background:' + RED + ';color:#fff;', warn: 'background:#FFE7E5;color:#B3160E;', info: 'background:' + INK + ';color:#fff;', muted: 'background:' + G1 + ';color:' + MUT + ';' };
+  const chip = function (label, href, wa) {
+    return '<a href="' + esc(href) + '" style="display:inline-block;margin:6px 0 0 6px;padding:5px 12px;border-radius:14px;font-size:12px;font-weight:bold;text-decoration:none;'
+      + (wa ? 'background:#E7F7EC;color:#0E7A39;' : 'background:' + G1 + ';color:' + INK + ';') + '">' + esc(label) + '</a>';
+  };
+  const row = function (x, n) {
+    const tag = x.tag ? ' <span style="display:inline-block;font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;' + (tagCss[x.tag[0]] || tagCss.muted) + '">' + esc(x.tag[1]) + '</span>' : '';
+    const links = (x.links || []).map(function (l) { return chip(l[0], l[1], /wa\.me/.test(l[1])); }).join('');
+    return '<tr><td style="width:26px;vertical-align:top;padding:12px 0;border-bottom:1px solid ' + G2 + ';"><div style="width:16px;height:16px;border:2px solid ' + INK + ';border-radius:5px;"></div></td>'
+      + '<td style="vertical-align:top;padding:12px 0;border-bottom:1px solid ' + G2 + ';">'
+      + '<div style="font-weight:bold;font-size:15px;line-height:1.5;">' + (n ? '<span style="color:' + RED + ';">' + n + '. </span>' : '') + esc(x.title) + tag + '</div>'
+      + (x.meta ? '<div style="color:' + MUT + ';font-size:13px;line-height:1.5;margin-top:2px;">' + esc(x.meta) + '</div>' : '') + (links ? '<div>' + links + '</div>' : '') + '</td></tr>';
+  };
+  const card = function (list, strong) {
+    return list.length ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:' + (strong ? '2px solid ' + INK : '1px solid ' + G2) + ';border-radius:14px;padding:2px 14px;border-collapse:separate;">'
+      + list.map(function (x, i) { return row(x, strong ? i + 1 : 0); }).join('') + '</table>' : '';
+  };
+  const h2 = function (t) { return '<div style="font-size:18px;font-weight:bold;margin:22px 0 10px;border-right:5px solid ' + RED + ';padding-right:10px;">' + esc(t) + '</div>'; };
+  let body = '';
+  if ((b.top || []).length) body += h2('أهم 3 حاجات النهارده') + card(b.top, true);
+  (b.sections || []).forEach(function (s) {
+    const title = s[0], list = s[1] || [];
+    let extra = '';
+    if (title === 'فلوس محتاجة تتحصّل' && (b.moneyRows || []).length) {
+      extra = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;border:1px solid ' + G2 + ';border-radius:14px;padding:2px 14px;border-collapse:separate;">'
+        + b.moneyRows.map(function (m) {
+          return '<tr><td style="padding:10px 0;border-bottom:1px solid ' + G2 + ';"><b>' + esc(m.name) + '</b><div style="color:' + MUT + ';font-size:12px;">' + esc(m.desc) + '</div></td>'
+            + '<td style="padding:10px 6px;border-bottom:1px solid ' + G2 + ';font-weight:bold;font-size:16px;white-space:nowrap;color:' + (m.lvl === 'bad' ? RED : m.lvl === 'muted' ? MUT : INK) + ';">' + money(m.amount) + '</td>'
+            + '<td style="padding:10px 0;border-bottom:1px solid ' + G2 + ';color:' + MUT + ';font-size:12px;text-align:left;">' + esc(m.when) + '</td></tr>';
+        }).join('') + '</table>'
+        + (b.moneyNow ? '<div style="margin-top:8px;background:' + INK + ';color:#fff;border-radius:10px;padding:10px 14px;font-weight:bold;">المستحق دلوقتي (متسلم أو جاهز): ' + money(b.moneyNow) + '</div>' : '');
+    }
+    if (list.length || extra) body += h2(title) + card(list, false) + extra;
+  });
+  if ((b.habits || []).length) {
+    body += h2('انت وصحتك') + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>' + b.habits.slice(0, 4).map(function (h) {
+      return '<td style="vertical-align:top;padding:4px;"><div style="background:' + G1 + ';border-radius:12px;padding:10px;"><b>' + esc(h.name) + '</b><div style="color:' + MUT + ';font-size:12px;margin-top:3px;">'
+        + (h.target > 1 ? 'الهدف ' + h.target + ' — امبارح ' + h.yday : h.yday ? 'امبارح ✓' : 'امبارح لأ') + '</div></div></td>';
+    }).join('') + '</tr></table>';
+  }
+  if ((b.plan || []).length) {
+    body += h2('شكل اليوم المقترح') + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ' + G2 + ';border-radius:14px;padding:2px 14px;border-collapse:separate;">'
+      + b.plan.map(function (p) { return '<tr><td style="padding:8px 0;color:' + RED + ';font-weight:bold;width:60px;direction:ltr;text-align:right;border-bottom:1px dashed ' + G2 + ';">' + esc(p[0]) + '</td><td style="padding:8px 10px;font-weight:bold;border-bottom:1px dashed ' + G2 + ';">' + esc(p[1]) + '</td></tr>'; }).join('') + '</table>';
+  }
+  if (b.quote) body += '<div style="margin-top:20px;background:' + G1 + ';border-right:5px solid ' + RED + ';border-radius:12px;padding:14px 16px;font-weight:bold;line-height:1.7;">«' + esc(b.quote) + '»</div>';
+  const stats = (b.stats || []).map(function (s) {
+    return '<td style="padding:4px;"><div style="background:#fff;border-radius:12px;padding:10px;"><div style="font-size:20px;font-weight:bold;white-space:nowrap;color:' + (s[2] ? RED : INK) + ';">' + esc(s[0]) + '</div><div style="color:' + MUT + ';font-size:12px;">' + esc(s[1]) + '</div></div></td>';
+  }).join('');
+  return '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4;margin:12mm}</style></head>'
+    + '<body dir="rtl" style="margin:0;background:#fff;color:' + INK + ';' + F + '">'
+    + '<div dir="rtl" style="max-width:640px;margin:0 auto;text-align:right;' + F + '">'
+    + '<div style="background:' + INK + ';color:#fff;padding:24px 22px;border-radius:0 0 16px 16px;">'
+    + '<div style="font-weight:bold;letter-spacing:1px;color:#bbb;font-size:13px;">GRAFICOO STUDIO</div>'
+    + '<div style="font-size:26px;font-weight:bold;margin-top:10px;">صباح الخير ☀️ ده يومك</div>'
+    + '<div style="color:#bbb;margin-top:4px;">' + briefDateAr_(b.date) + '</div>'
+    + '<a href="' + esc(focus) + '" style="display:inline-block;margin-top:14px;background:' + RED + ';color:#fff;font-weight:bold;padding:9px 16px;border-radius:18px;text-decoration:none;">افتح الملخص في Focus وعلّم اللي خلص ←</a></div>'
+    + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:' + G1 + ';margin-top:10px;border-radius:14px;"><tr>' + stats + '</tr></table>'
+    + '<div style="padding:0 4px;">' + body + '</div>'
+    + '<div style="margin-top:22px;background:' + INK + ';color:#ccc;padding:16px 18px;border-radius:14px;font-size:12.5px;line-height:1.8;">'
+    + '<b style="color:#fff;">تعلّم اللي خلص:</b> افتح الملخص في Focus ودوس على المربع.<br>'
+    + '<b style="color:#fff;">ملاحظاتك:</b> اكتب اللي عاوز تعمله في ملاحظة على Focus — Claude بيحوّلها لمهام كل صبح، أو دوس «حوّل لمهام» في الملاحظة نفسها.</div>'
+    + '</div></body></html>';
+}
