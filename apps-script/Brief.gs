@@ -32,6 +32,7 @@ function buildBrief() {
   const props = PropertiesService.getScriptProperties();
   const today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   const nowMs = Date.now();
+  const step = function (m) { Logger.log((Date.now() - nowMs) + ' ms — ' + m); };
   const day = function (d, n) { const x = new Date(d + 'T12:00:00'); x.setDate(x.getDate() + n); return Utilities.formatDate(x, TZ, 'yyyy-MM-dd'); };
   const daysBetween = function (a, b) { return Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 864e5); };
   const fmt = function (n) { return Math.round(Number(n) || 0).toLocaleString('en-US'); };
@@ -44,6 +45,7 @@ function buildBrief() {
     if (!F[r[0]]) return;
     try { const o = JSON.parse(r[4]); if (!o.deleted) F[r[0]][String(r[1])] = o; } catch (e) { /* skip bad row */ }
   });
+  step('Focus data read (' + Object.keys(F.task).length + ' tasks, ' + Object.keys(F.note).length + ' notes)');
   const out = [];   // items to write back: {kind, o}
   const put = function (kind, o) { o.updatedAt = nowMs; out.push({ kind: kind, o: o }); F[kind][o.id] = o; };
 
@@ -57,8 +59,11 @@ function buildBrief() {
       const o = {}; head.forEach(function (h, j) { if (h) o[h] = r[j] instanceof Date ? Utilities.formatDate(r[j], TZ, 'yyyy-MM-dd') : r[j]; }); return o;
     }).filter(function (o) { return o.id; });
   };
+  step('Graficoo sheet opened');
   const P = table('Projects');
+  step('Projects read (' + P.length + ')');
   const C = table('Clients');
+  step('Clients read (' + C.length + ')');
   const settings = gss.getSheetByName('App Settings') ? gss.getSheetByName('App Settings').getDataRange().getValues() : [];
   let followDays = 3; settings.forEach(function (r) { if (r[0] === 'followDays' && Number(r[1])) followDays = Number(r[1]); });
   const clientById = {}; C.forEach(function (c) { clientById[c.id] = c; });
@@ -206,6 +211,7 @@ function buildBrief() {
   // money tasks also appear in the money section (as tickable rows above the table)
   brief.sections.splice(2, 0, ['فلوس محتاجة تتحصّل', sec('money')]);
   put('brief', brief);
+  step('brief built');
   focusWrite_(out);
   Logger.log('Brief ' + today + ': ' + out.length + ' items written, AI ' + (ai ? 'on' : 'off' + (aiErr ? ' (' + aiErr + ')' : '')));
   return brief;
