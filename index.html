@@ -217,8 +217,12 @@ h3 { font-size: 14.5px; font-weight: 700; }
 
 /* projects */
 .pgrid { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
-.pcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-m); padding: 14px; display: grid; gap: 9px; text-align: start; width: 100%; }
-.pcard .row b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-m); padding: 14px; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 9px; text-align: start; width: 100%; min-width: 0; overflow: hidden; }
+.pcard .row { align-items: flex-start; min-width: 0; }
+.pcard .row b { font-size: 15px; line-height: 1.35; min-height: 2.7em; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; white-space: normal; overflow-wrap: anywhere; }
+.pcard .row .pdot, .pcard .row .cnt { margin-top: 5px; flex: none; }
+.pcard .row .tag { margin-top: 1px; flex: none; }
+.pcard .sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pcard .cnt { font-size: 12px; font-weight: 700; background: var(--surface-2); border-radius: 99px; padding: 3px 9px; color: var(--muted); }
 .pcard .pdot, .phead .pdot { width: 12px; height: 12px; }
 .bar { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
@@ -1036,12 +1040,20 @@ function briefRow(x, n) {
     ${t ? `<button class="bck" data-act="toggle-task" data-id="${esc(x.id)}" aria-pressed="${done}" aria-label="${done ? L('رجّعها') : L('خلصت')}"><span>${I.check}</span></button>` : '<span class="bck off"><span></span></span>'}
     <div class="grow"><div class="bt">${n ? `<b class="bn">${n}</b>` : ''}<span class="tx">${esc(t ? t.title : x.title)}</span> ${tag}</div>${x.meta ? `<div class="bm">${esc(x.meta)}</div>` : ''}${links ? `<div class="bchips">${links}</div>` : ''}</div></div>`;
 }
+let briefPulled = false;
 function viewBrief() {
   const td = dkey(), days = Object.keys(S.briefs).filter((k) => live(S.briefs[k])).sort();
   const day = briefDay && S.briefs[briefDay] ? briefDay : S.briefs[td] ? td : days[days.length - 1];
   const b = day && S.briefs[day];
   const back = `<button class="link bback" data-act="nav" data-v="tasks">${I.chev} ${L("المهام")}</button>`;
-  if (!b) return `<div class="block">${back}<div class="card empty">${L("لسه مفيش ملخص — بيتعمل كل يوم الساعة 8 الصبح.")}</div></div>`;
+  if (!b) {
+    // opened from the email on a device that has not pulled the brief yet: do one full pull (since 0) and re-render
+    let pulling = false;
+    if (S.dev.syncUrl && !briefPulled) { briefPulled = pulling = true; setTimeout(async () => { while (syncing) await new Promise((r) => setTimeout(r, 200)); S.dev.since = 0; await syncNow(); if (view === 'brief') render(); }, 0); }
+    const msg = !S.dev.syncUrl ? `${L("الجهاز ده مش مربوط بالمزامنة، فالملخص مش بيوصله.")}<br><button class="btn primary small" style="margin-top:10px" data-act="settings">${L("اربط المزامنة")}</button>`
+      : pulling ? L("بجيب الملخص…") : L("لسه مفيش ملخص — بيتعمل كل يوم الساعة 8 الصبح.");
+    return `<div class="block">${back}<div class="card empty">${msg}</div></div>`;
+  }
   const d = parseD(day), money = b.moneyRows || [];
   const sec = (title, list, extra = '') => list.length || extra ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${title}</h3></div><div class="card bl">${list.map((x) => briefRow(x)).join('')}${extra}</div></div>` : '';
   const moneyTbl = money.length ? `<table class="btbl">${money.map((m) => `<tr><td><b>${esc(m.name)}</b><div class="bm">${esc(m.desc)}</div></td><td class="amt ${esc(m.lvl)}">${Number(m.amount).toLocaleString('en-US')}${L("ج")}</td><td class="bm">${esc(m.when)}</td></tr>`).join('')}</table>` : '';
@@ -1050,7 +1062,7 @@ function viewBrief() {
     : sec(L(title), list)).join('');
   const plan = (b.plan || []).length ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${L("شكل اليوم المقترح")}</h3></div><div class="card bl">${b.plan.map(([h, x]) => `<div class="bslot"><b>${esc(h)}</b><span>${esc(x)}</span></div>`).join('')}</div></div>` : '';
   return `<div class="block">${back}
-    <div class="hello bhello"><div class="eyebrow">${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}${day !== td ? ' · ' + L('ملخص قديم') : ''}</div><h1>☀️ ${L("ده يومك")}</h1>
+    <div class="hello bhello"><div class="eyebrow">${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}${day !== td ? ' · ' + L('ملخص قديم') : ''}</div><h1>${LANG === 'en' ? 'Good morning, Ismaeloo — your day ☀️' : 'صباح الخير يا اسماعيلوو ده يومك ☀️'}</h1>
       <div class="bstats">${(b.stats || []).map(([v, l, r]) => `<div class="${r ? 'r' : ''}"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('')}</div></div>
     ${(b.top || []).length ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${L("أهم 3 حاجات النهارده")}</h3></div><div class="card bl btop">${b.top.map((x, i) => briefRow(x, i + 1)).join('')}</div></div>` : ''}
     ${sections}

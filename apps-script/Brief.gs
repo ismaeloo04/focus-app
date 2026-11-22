@@ -285,7 +285,7 @@ function briefHtml_(b) {
     + '<div dir="rtl" style="max-width:640px;margin:0 auto;text-align:right;' + F + '">'
     + '<div style="background:' + INK + ';color:#fff;padding:24px 22px;border-radius:0 0 16px 16px;">'
     + '<div style="font-weight:bold;letter-spacing:1px;color:#bbb;font-size:13px;">GRAFICOO STUDIO</div>'
-    + '<div style="font-size:26px;font-weight:bold;margin-top:10px;">صباح الخير ☀️ ده يومك</div>'
+    + '<div style="font-size:26px;font-weight:bold;margin-top:10px;">صباح الخير يا اسماعيلوو ده يومك ☀️</div>'
     + '<div style="color:#bbb;margin-top:4px;">' + briefDateAr_(b.date) + '</div>'
     + '<a href="' + esc(focus) + '" style="display:inline-block;margin-top:14px;background:' + RED + ';color:#fff;font-weight:bold;padding:9px 16px;border-radius:18px;text-decoration:none;">افتح الملخص في Focus وعلّم اللي خلص ←</a></div>'
     + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:' + G1 + ';margin-top:10px;border-radius:14px;"><tr>' + stats + '</tr></table>'
