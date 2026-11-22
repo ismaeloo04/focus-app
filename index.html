@@ -167,6 +167,19 @@ h3 { font-size: 14.5px; font-weight: 700; }
 .bcard .sun { font-size: 24px; } .bcard .s { color: var(--muted); font-size: 12.5px; } .bcard .i { color: var(--muted); }
 .bback { justify-self: start; } .bback .i { transform: scaleX(-1); }
 .bhello h1 { font-size: 24px; }
+.dstrip { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 4px; }
+.dstrip::-webkit-scrollbar { display: none; }
+.dchip { flex: none; width: 54px; display: grid; justify-items: center; gap: 2px; padding: 7px 0 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; color: var(--ink); position: relative; }
+.dchip span { font-size: 11px; color: var(--muted); white-space: nowrap; } .dchip b { font-size: 17px; font-weight: 800; }
+.dchip.past { opacity: .72; } .dchip.today { border-color: var(--red); }
+.dchip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); opacity: 1; } .dchip[aria-pressed="true"] span { color: inherit; opacity: .75; }
+.dd { font-style: normal; font-size: 10px; font-weight: 800; min-width: 16px; height: 16px; line-height: 16px; border-radius: 99px; background: var(--red); color: #fff; padding: 0 4px; }
+.dd.ok { background: var(--surface-2); color: var(--ink); } .dd.b { min-width: 6px; width: 6px; height: 6px; padding: 0; margin-top: 5px; }
+.dprog { display: grid; gap: 6px; margin-top: 12px; font-size: 12.5px; color: var(--bar-muted); position: relative; z-index: 1; }
+.dprog i { height: 6px; border-radius: 3px; background: var(--bar-2); overflow: hidden; display: block; } .dprog i b { display: block; height: 100%; background: var(--red); border-radius: 3px; }
+.badd { width: 100%; background: none; border: 0; color: var(--muted); font-weight: 600; font-size: 13.5px; align-items: center; justify-content: flex-start; }
+.badd .i { width: 18px; height: 18px; }
+.dnotes { display: grid; gap: 6px; font-size: 12.5px; color: var(--muted); padding: 0 4px; }
 .bstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; position: relative; z-index: 1; }
 .bstats div { background: var(--bar-2); border-radius: 12px; padding: 10px; display: grid; gap: 2px; min-width: 0; }
 .bstats b { font-size: 17px; font-weight: 800; white-space: nowrap; } .bstats .r b { color: var(--red); } .bstats span { font-size: 11px; color: var(--bar-muted); line-height: 1.35; }
@@ -296,7 +309,7 @@ body.has-mini .fab { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
 
 /* bottom nav */
 .nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line);
-  display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px var(--gut-r) calc(8px + env(safe-area-inset-bottom, 0px)) var(--gut-l); }
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); padding: 6px var(--gut-r) calc(8px + env(safe-area-inset-bottom, 0px)) var(--gut-l); }
 .nav button { background: none; border: 0; display: grid; justify-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--muted); padding: 4px 0; max-width: 140px; width: 100%; justify-self: center; }
 .nav button[aria-current="page"] { color: var(--ink); }
 .nav button[aria-current="page"] .i { color: var(--red); }
@@ -594,6 +607,7 @@ const I = {
   reset: sv('<path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/>'),
   skip: sv('<path d="M6 5.5l9 6.5-9 6.5z" fill="currentColor"/><path d="M18.5 5.5v13"/>'),
   plus: sv('<path d="M12 5v14M5 12h14"/>'),
+  sun: sv('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>'),
   check: sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
   timer: sv('<circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 2M9.5 2.5h5"/>'),
   tasks: sv('<path d="M10 6.5h10M10 12h10M10 17.5h10"/><path d="M3.5 6.5l1.3 1.3 2.4-2.6M3.5 12l1.3 1.3 2.4-2.6M3.5 17.5l1.3 1.3 2.4-2.6"/>'),
@@ -676,6 +690,8 @@ function putObj(kind, o) {
 function touch(kind, o, quick) { o.updatedAt = now(); S.dirty[`${kind}:${o.id}`] = 1; save(); scheduleSync(quick ? 400 : 1500); }
 
 const live = (o) => o && !o.deleted;
+const dayDiff = (a, b) => Math.round((parseD(b) - parseD(a)) / 864e5);
+function centerDay() { requestAnimationFrame(() => { const c = document.querySelector('.dchip[aria-pressed="true"]'); if (c) c.scrollIntoView({ block: 'nearest', inline: 'center' }); }); }
 const projects = () => Object.values(S.projects).filter(live).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
 const openProj = (p) => live(p) && !p.archived && !p.closed;
 const tasks = () => Object.values(S.tasks).filter(live);
@@ -1041,35 +1057,69 @@ function briefRow(x, n) {
     <div class="grow"><div class="bt">${n ? `<b class="bn">${n}</b>` : ''}<span class="tx">${esc(t ? t.title : x.title)}</span> ${tag}</div>${x.meta ? `<div class="bm">${esc(x.meta)}</div>` : ''}${links ? `<div class="bchips">${links}</div>` : ''}</div></div>`;
 }
 let briefPulled = false;
+/* «يومي»: one page per day — the morning brief of that day + every Focus task dated that day.
+   The strip shows the last 7 days (older briefs are removed by Brief.gs) and the next 6. */
+const dayTasks = (k) => tasks().filter((t) => t.due === k && !t.parentId);
+const lateTasks = (td) => tasks().filter((t) => !t.done && !t.parentId && t.due && t.due < td);
+function dayOpen(k) { return dayTasks(k).filter((t) => !t.done).length + (k === dkey() ? lateTasks(k).length : 0); }
+function dayStrip(day, td) {
+  const ks = []; for (let i = -6; i <= 6; i++) ks.push(addDays(td, i));
+  return `<div class="dstrip" id="dstrip">${ks.map((k) => {
+    const d = parseD(k), all = dayTasks(k), left = all.filter((t) => !t.done).length, has = !!(S.briefs[k] && live(S.briefs[k]));
+    const dot = all.length ? (left ? `<i class="dd">${left}</i>` : `<i class="dd ok">✓</i>`) : has ? '<i class="dd b"></i>' : '';
+    return `<button class="dchip ${k === td ? 'today' : ''} ${k < td ? 'past' : ''}" data-act="open-brief" data-v="${k}" aria-pressed="${k === day}"><span>${k === td ? L('النهارده') : DAYS_S[d.getDay()]}</span><b class="num">${d.getDate()}</b>${dot}</button>`;
+  }).join('')}</div>`;
+}
 function viewBrief() {
-  const td = dkey(), days = Object.keys(S.briefs).filter((k) => live(S.briefs[k])).sort();
-  const day = briefDay && S.briefs[briefDay] ? briefDay : S.briefs[td] ? td : days[days.length - 1];
-  const b = day && S.briefs[day];
-  const back = `<button class="link bback" data-act="nav" data-v="tasks">${I.chev} ${L("المهام")}</button>`;
-  if (!b) {
+  const td = dkey(), day = briefDay && /^\d{4}-\d{2}-\d{2}$/.test(briefDay) ? briefDay : td;
+  const b = S.briefs[day] && live(S.briefs[day]) ? S.briefs[day] : null;
+  const d = parseD(day), isToday = day === td, past = day < td;
+  let pullMsg = '';
+  if (isToday && !b) {
     // opened from the email on a device that has not pulled the brief yet: do one full pull (since 0) and re-render
     let pulling = false;
     if (S.dev.syncUrl && !briefPulled) { briefPulled = pulling = true; setTimeout(async () => { while (syncing) await new Promise((r) => setTimeout(r, 200)); S.dev.since = 0; await syncNow(); if (view === 'brief') render(); }, 0); }
-    const msg = !S.dev.syncUrl ? `${L("الجهاز ده مش مربوط بالمزامنة، فالملخص مش بيوصله.")}<br><button class="btn primary small" style="margin-top:10px" data-act="settings">${L("اربط المزامنة")}</button>`
-      : pulling ? L("بجيب الملخص…") : L("لسه مفيش ملخص — بيتعمل كل يوم الساعة 8 الصبح.");
-    return `<div class="block">${back}<div class="card empty">${msg}</div></div>`;
+    pullMsg = !S.dev.syncUrl ? `<div class="card empty">${L("الجهاز ده مش مربوط بالمزامنة، فملخص الصبح مش بيوصله.")}<br><button class="btn primary small" style="margin-top:10px" data-act="settings">${L("اربط المزامنة")}</button></div>`
+      : pulling ? `<div class="card empty">${L("بجيب ملخص النهارده…")}</div>` : '';
   }
-  const d = parseD(day), money = b.moneyRows || [];
+  const shown = new Set();
+  const take = (list) => list.filter((x) => { if (shown.has(x.id)) return false; shown.add(x.id); return true; });
   const sec = (title, list, extra = '') => list.length || extra ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${title}</h3></div><div class="card bl">${list.map((x) => briefRow(x)).join('')}${extra}</div></div>` : '';
+  const tcard = (t) => ({ id: t.id, title: t.title, meta: t.due && t.due < day ? `${L("من")} ${dayDiff(t.due, day)} ${L("يوم")}` + (t.rolled ? ` · ${L("اتأجلت")} ${t.rolled}×` : '') : (t.rolled ? `${L("اتأجلت")} ${t.rolled}×` : ''), tag: t.prio === 2 ? ['bad', L('عاجل')] : t.prio === 1 ? ['warn', L('مهم')] : null });
+  // brief rows first (they carry links / money tags), then your own tasks of the day
+  const top = b ? take(b.top || []) : [];
+  const bsecs = b ? (b.sections || []).filter(([title]) => title !== 'مهامك النهارده').map(([title, list]) => [title, take(list)]) : [];
+  const late = isToday ? take(lateTasks(td).sort(sortTasks).map(tcard)) : [];
+  const mine = take(dayTasks(day).sort(sortTasks).map(tcard));
+  const ids = [...shown].filter((id) => S.tasks[id]), doneN = ids.filter((id) => S.tasks[id].done).length;
+  const money = b ? b.moneyRows || [] : [];
   const moneyTbl = money.length ? `<table class="btbl">${money.map((m) => `<tr><td><b>${esc(m.name)}</b><div class="bm">${esc(m.desc)}</div></td><td class="amt ${esc(m.lvl)}">${Number(m.amount).toLocaleString('en-US')}${L("ج")}</td><td class="bm">${esc(m.when)}</td></tr>`).join('')}</table>` : '';
-  const sections = (b.sections || []).map(([title, list]) => title === 'فلوس محتاجة تتحصّل'
+  const sections = bsecs.map(([title, list]) => title === 'فلوس محتاجة تتحصّل'
     ? sec(L(title), list, moneyTbl + (b.moneyNow ? `<div class="btotal"><span>${L("المستحق دلوقتي")}</span><b>${Number(b.moneyNow).toLocaleString('en-US')}${L("ج")}</b></div>` : ''))
     : sec(L(title), list)).join('');
-  const plan = (b.plan || []).length ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${L("شكل اليوم المقترح")}</h3></div><div class="card bl">${b.plan.map(([h, x]) => `<div class="bslot"><b>${esc(h)}</b><span>${esc(x)}</span></div>`).join('')}</div></div>` : '';
-  return `<div class="block">${back}
-    <div class="hello bhello"><div class="eyebrow">${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}${day !== td ? ' · ' + L('ملخص قديم') : ''}</div><h1>${LANG === 'en' ? 'Good morning, Ismaeloo — your day ☀️' : 'صباح الخير يا اسماعيلوو ده يومك ☀️'}</h1>
-      <div class="bstats">${(b.stats || []).map(([v, l, r]) => `<div class="${r ? 'r' : ''}"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('')}</div></div>
-    ${(b.top || []).length ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${L("أهم 3 حاجات النهارده")}</h3></div><div class="card bl btop">${b.top.map((x, i) => briefRow(x, i + 1)).join('')}</div></div>` : ''}
+  const plan = b && (b.plan || []).length ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${L("شكل اليوم المقترح")}</h3></div><div class="card bl">${b.plan.map(([h, x]) => `<div class="bslot"><b>${esc(h)}</b><span>${esc(x)}</span></div>`).join('')}</div></div>` : '';
+  const addBtn = `<button class="brow badd" data-act="day-add" data-v="${day}">${I.plus} ${isToday ? L('مهمة للنهارده') : L('مهمة لليوم ده')}</button>`;
+  const mineBlock = `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${isToday ? L('مهامك النهارده') : past ? L('مهام اليوم ده') : L('متخطط لليوم ده')}</h3><span class="c">${mine.length || ''}</span></div><div class="card bl">${mine.map((x) => briefRow(x)).join('')}${addBtn}</div></div>`;
+  const undated = isToday ? tasks().filter((t) => !t.done && !t.due && !t.parentId).length : 0;
+  const notes = [];
+  if (b && b.moved) notes.push(`${b.moved} ${L("حاجة مهمة اتأجلت لوحدها لأيام جاية")}`);
+  if (b && b.parked) notes.push(`${b.parked} ${L("حاجة مش مهمة اتنقلت لـ «من غير معاد»")}`);
+  if (undated) notes.push(`<button class="link" data-act="filter" data-v="inbox">${undated} ${L("مهمة من غير معاد — حطلها يوم")} ${I.chev}</button>`);
+  const title = isToday ? (LANG === 'en' ? 'Good morning, Ismaeloo — your day ☀️' : 'صباح الخير يا اسماعيلوو ده يومك ☀️') : past ? `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}` : `${L("خطة")} ${DAYS[d.getDay()]}`;
+  const prog = ids.length ? `<div class="dprog"><span>${L("خلصت")} ${doneN} ${L("من")} ${ids.length}</span><i><b style="width:${Math.round(doneN / ids.length * 100)}%"></b></i></div>` : '';
+  return `<div class="block">
+    ${dayStrip(day, td)}
+    <div class="hello bhello"><div class="eyebrow">${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}${!isToday ? ' · ' + (past ? L('يوم فات') : L('جاي')) : ''}</div><h1>${title}</h1>
+      ${b && (b.stats || []).length ? `<div class="bstats">${b.stats.map(([v, l, r]) => `<div class="${r ? 'r' : ''}"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('')}</div>` : ''}${prog}</div>
+    ${pullMsg}
+    ${top.length ? `<div class="block"><div class="sec-head"><h3><i class="bbar"></i>${isToday ? L("أهم 3 حاجات النهارده") : L("أهم حاجات اليوم ده")}</h3></div><div class="card bl btop">${top.map((x, i) => briefRow(x, i + 1)).join('')}</div></div>` : ''}
+    ${late.length ? sec(L('من الأيام اللي فاتت'), late) : ''}
+    ${mineBlock}
     ${sections}
-    ${habitPills(day)}
+    ${notes.length ? `<div class="dnotes">${notes.map((x) => `<div>${x}</div>`).join('')}</div>` : ''}
+    ${isToday || past ? habitPills(day) : ''}
     ${plan}
-    ${b.quote ? `<div class="bquote">«${esc(b.quote)}»</div>` : ''}
-    ${days.length > 1 ? `<div class="chips wrap">${days.slice(-7).reverse().map((k) => chip('open-brief', k, k === td ? L('النهارده') : k.slice(8) + '/' + k.slice(5, 7), k === day)).join('')}</div>` : ''}
+    ${b && b.quote ? `<div class="bquote">«${esc(b.quote)}»</div>` : ''}
   </div>`;
 }
 /* ---------- note → tasks / habits (by hand, no AI needed) ----------
@@ -1362,7 +1412,7 @@ function viewStats() {
     <div class="block"><div class="sec-head"><h3>${L("آخر الجلسات")}</h3></div>${recent.length ? `<div class="list">${recent.map((s) => { const k = S.tasks[s.taskId]; return `<div class="srow"><span class="grow">${k ? esc(k.title) : s.kind === 'timer' ? L('تايمر') : L('تركيز')}${s.partial ? L(' <span class="s">(اتقطعت)</span>') : ''}<br><span class="s">${dueLabel(s.day)} · ${clock(s.start)}</span></span><b class="num">${s.minutes} ${L("د")}</b></div>`; }).join('')}</div>` : L('<div class="card empty">ابدأ أول جلسة تركيز وهتلاقيها هنا.</div>')}</div>`;
 }
 
-const navCur = (v) => view === v || (v === 'projects' && view === 'project') || (v === 'tasks' && view === 'brief');
+const navCur = (v) => view === v || (v === 'projects' && view === 'project');
 function railHtml() {
   const td = dkey(), open = tasks().filter((t) => !t.done), n = open.filter((t) => t.due && t.due <= td).length;
   const hsT = habits().filter((h) => !h.archived && scheduled(h, td)), hLeft = hsT.filter((h) => !hDone(h, td)).length;
@@ -1370,13 +1420,13 @@ function railHtml() {
   const ps = projects().filter(openProj);
   const grp = (title, arr) => arr.length ? `<div class="rp"><div class="eyebrow">${title}</div>${arr.map((p) => `<button data-act="open-project" data-id="${esc(p.id)}" ${view === 'project' && projId === p.id ? 'aria-current="page"' : ''}><i class="pdot" style="background:${esc(p.color)}"></i><span>${esc(p.name)}</span><span class="num sub">${open.filter((t) => t.projectId === p.id).length || ''}</span></button>`).join('')}</div>` : '';
   return `<button class="btn primary add" data-act="fab">${I.plus} ${fabLabel()}</button>
-    ${nv('tasks', I.tasks, L('المهام'), n || '')}${nv('projects', I.folder, L('المشاريع'))}${nv('timer', I.timer, L('التايمر'))}${nv('habits', I.habit, L('العادات'), hLeft || '')}${nv('notes', I.note, L('الملاحظات'))}${nv('stats', I.chart, L('الإحصائيات'))}
+    ${CFG.graficoo ? nv('brief', I.sun, L('يومي'), dayOpen(td) || '') : ''}${nv('tasks', I.tasks, L('المهام'), n || '')}${nv('projects', I.folder, L('المشاريع'))}${nv('timer', I.timer, L('التايمر'))}${nv('habits', I.habit, L('العادات'), hLeft || '')}${nv('notes', I.note, L('الملاحظات'))}${nv('stats', I.chart, L('الإحصائيات'))}
     ${grp(L('جرافيكوو'), ps.filter(isG))}${grp(workLabel(), ps.filter((p) => !isG(p) && p.area === 'work'))}${grp(areaName('life'), ps.filter((p) => !isG(p) && p.area === 'life'))}
     <div class="kbd"><kbd>Space</kbd> ${L("شغّل/وقّف التايمر")}<br><kbd>N</kbd> ${fabLabel()}</div>`;
 }
 function navHtml() {
   const b = (v, ic, l) => `<button data-act="nav" data-v="${v}" ${navCur(v) ? 'aria-current="page"' : ''}>${ic}<span>${l}</span></button>`;
-  return `${b('tasks', I.tasks, L('المهام'))}${b('projects', I.folder, L('المشاريع'))}${b('timer', I.timer, L('التايمر'))}${b('habits', I.habit, L('العادات'))}${b('notes', I.note, L('الملاحظات'))}`;
+  return `${CFG.graficoo ? b('brief', I.sun, L('يومي')) : ''}${b('tasks', I.tasks, L('المهام'))}${b('projects', I.folder, L('المشاريع'))}${b('timer', I.timer, L('التايمر'))}${b('habits', I.habit, L('العادات'))}${b('notes', I.note, L('الملاحظات'))}`;
 }
 const fabLabel = () => view === 'projects' ? L('مشروع جديد') : view === 'habits' ? L('عادة جديدة') : view === 'notes' ? L('ملاحظة جديدة') : view === 'project' ? L('خطوة جديدة') : L('مهمة جديدة');
 function fabAction() {
@@ -2032,7 +2082,8 @@ const ACT = {
   'note-tasks': () => { const id = D && D.id; closeSheet(); if (id && S.notes[id]) noteTasksSheet(id); else toast(L('اكتب الملاحظة الأول')); },
   'nt-save': () => noteTasksSave(),
   'nt-kind': (el, id, v) => { const row = el.closest('.nt-row'); row.querySelectorAll('[data-act="nt-kind"]').forEach((b) => b.setAttribute('aria-pressed', String(b === el))); D.items[+row.dataset.i].kind = v; row.querySelector('[data-nt="due"]').hidden = v === 'habit'; row.querySelector('.nt-tg').hidden = v !== 'habit'; },
-  'open-brief': (el, id, v) => { view = 'brief'; briefDay = v || null; closeSheet(); render(); scrollTo(0, 0); },
+  'open-brief': (el, id, v) => { view = 'brief'; briefDay = v || null; closeSheet(); render(); scrollTo(0, 0); centerDay(); },
+  'day-add': (el, id, v) => taskSheet(null, { due: v || dkey() }),
   'edit-task': (el, id) => { if (pipWin && el.ownerDocument === pipWin.document) window.focus(); taskSheet(id); },
   'focus-task': (el, id) => focusTask(id),
   'new-task': () => taskSheet(null),

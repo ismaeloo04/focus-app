@@ -127,6 +127,32 @@ function buildBrief() {
       brief: { sec: 'growth', meta: 'عرض جديد أو سؤال عن احتياجاتهم', tag: ['info', 'عملاء'] } });
   }
 
+  /* ---------- «يومي»: unfinished tasks move on by themselves, every day ----------
+     important (مهم / عاجل) and late 3+ days → the first coming day with < 4 open tasks;
+     ordinary and late 2+ days → loses its date (goes to «من غير معاد», nothing is deleted).
+     Graficoo tasks (b-…), repeating tasks and sub-steps are left alone. */
+  let moved = 0, parked = 0;
+  const load = {};
+  Object.keys(F.task).forEach(function (id) { const t = F.task[id]; if (!t.done && !t.deleted && t.due && t.due > today) load[t.due] = (load[t.due] || 0) + 1; });
+  Object.keys(F.task).forEach(function (id) {
+    const t = F.task[id];
+    if (t.done || t.deleted || t.parentId || t.repeat || !t.due || t.due >= today || /^b-/.test(id)) return;
+    const lateBy = daysBetween(t.due, today);
+    if ((t.prio || 0) >= 1) {
+      if (lateBy < 3) return;
+      let d = day(today, 1); while ((load[d] || 0) >= 4) d = day(d, 1);
+      load[d] = (load[d] || 0) + 1;
+      t.notes = (t.notes ? t.notes + '\n' : '') + 'اتأجلت لوحدها من ' + t.due + ' لـ ' + d;
+      t.due = d; t.rolled = (t.rolled || 0) + 1; put('task', t); moved++;
+    } else if (lateBy >= 2) {
+      t.notes = (t.notes ? t.notes + '\n' : '') + 'اتشال معادها لوحدها (كان ' + t.due + ')';
+      t.due = null; put('task', t); parked++;
+    }
+  });
+  const keepFrom = day(today, -6);   // «يومي» keeps the last 7 days
+  Object.keys(F.brief).forEach(function (id) { if (id < keepFrom) { const o = F.brief[id]; o.deleted = true; put('brief', o); delete F.brief[id]; } });
+  step('carry-over: ' + moved + ' moved, ' + parked + ' undated');
+
   /* ---------- the brief record ---------- */
   const all = Object.keys(F.task).map(function (k) { return F.task[k]; });
   const mine = all.filter(function (t) { return !t.done && !t.deleted && !t.parentId && t.due && t.due <= today && !(t.brief && t.brief.sec); });
@@ -152,8 +178,9 @@ function buildBrief() {
     top: top.map(function (id) { return card(F.task[id]); }),
     sections: [['مهامك النهارده', mine.sort(function (a, b) { return (b.prio || 0) - (a.prio || 0); }).slice(0, 8).map(card)], ['المشاريع والعملاء', sec('proj')], ['من ملاحظاتك', sec('note')], ['تنمية جرافيكوو', sec('growth')]],
     moneyRows: money.slice(0, 8), moneyNow: moneyNow, habits: habits,
-    plan: [], quote: BRIEF_QUOTES[new Date().getDate() % BRIEF_QUOTES.length],
+    plan: [], quote: BRIEF_QUOTES[new Date().getDate() % BRIEF_QUOTES.length], moved: moved, parked: parked,
     links: { focus: BRIEF_FOCUS + '?brief=' + today, app: BRIEF_APP },
+    open: openTasks.filter(function (t) { return !t.parentId && t.due && t.due <= today; }).length,
   };
   // money tasks also appear in the money section (as tickable rows above the table)
   brief.sections.splice(2, 0, ['فلوس محتاجة تتحصّل', sec('money')]);
@@ -206,16 +233,43 @@ function sendBriefEmail(force) {
     if (r[0] === 'brief' && String(r[1]) === today) { try { b = JSON.parse(r[4]); } catch (e) { /* ignore */ } }
   });
   if (!b) b = buildBrief();   // the 8:00 run did not happen: make it now
-  const html = briefHtml_(b);
-  const pdf = HtmlService.createHtmlOutput(html).getBlob().getAs('application/pdf').setName('ملخص ' + today + '.pdf');
+  const html = briefShortHtml_(b);
   const top = (b.top || []).length;
   MailApp.sendEmail({
     to: briefEmailTo_(), name: 'Graficoo — ملخص الصبح',
     subject: '☀️ ملخص ' + briefDateAr_(today) + (top ? ' — ' + top + ' حاجات مهمة' : '') + (b.moneyNow ? ' · مستحق ' + Number(b.moneyNow).toLocaleString('en-US') + 'ج' : ''),
-    htmlBody: html, attachments: [pdf],
+    htmlBody: html,
   });
   props.setProperty('BRIEF_EMAILED', today);
   Logger.log('Brief email sent to ' + briefEmailTo_());
+}
+
+/** The short email: greeting, the top 3, how many more are waiting, and one button to «يومي». */
+function briefShortHtml_(b) {
+  const esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+  const RED = '#EE2E24', INK = '#141414', G2 = '#E6E6E6', MUT = '#6B6B6B';
+  const F = "font-family:Tahoma,'Segoe UI',Arial,sans-serif;";
+  const focus = (b.links && b.links.focus) || BRIEF_FOCUS;
+  const top = b.top || [];
+  const more = Math.max(0, (Number(b.open) || 0) - top.length);
+  const rows = top.map(function (x, i) {
+    return '<tr><td style="padding:10px 0;border-bottom:1px solid ' + G2 + ';font-weight:bold;font-size:15px;line-height:1.5;"><span style="color:' + RED + ';">' + (i + 1) + '. </span>' + esc(x.title)
+      + (x.meta ? '<div style="color:' + MUT + ';font-size:12.5px;font-weight:normal;">' + esc(x.meta) + '</div>' : '') + '</td></tr>';
+  }).join('');
+  const extra = [];
+  if (more) extra.push('و' + more + ' حاجة تانية مستنياك في «يومي»');
+  if (b.moneyNow) extra.push('مستحق دلوقتي ' + Math.round(b.moneyNow).toLocaleString('en-US') + 'ج');
+  return '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+    + '<body dir="rtl" style="margin:0;background:#fff;color:' + INK + ';' + F + '"><div dir="rtl" style="max-width:560px;margin:0 auto;text-align:right;' + F + '">'
+    + '<div style="background:' + INK + ';color:#fff;padding:22px;border-radius:0 0 16px 16px;">'
+    + '<div style="font-weight:bold;letter-spacing:1px;color:#bbb;font-size:12px;">GRAFICOO STUDIO</div>'
+    + '<div style="font-size:24px;font-weight:bold;margin-top:8px;">صباح الخير يا اسماعيلوو ده يومك ☀️</div>'
+    + '<div style="color:#bbb;margin-top:4px;">' + briefDateAr_(b.date) + '</div></div>'
+    + (rows ? '<div style="font-size:16px;font-weight:bold;margin:18px 4px 6px;border-right:5px solid ' + RED + ';padding-right:10px;">أهم 3 حاجات النهارده</div>'
+      + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:0 6px;">' + rows + '</table>' : '')
+    + (extra.length ? '<div style="color:' + MUT + ';font-size:13.5px;margin:12px 6px 0;">' + esc(extra.join(' · ')) + '</div>' : '')
+    + '<div style="text-align:center;margin:22px 0 10px;"><a href="' + esc(focus) + '" style="display:inline-block;background:' + RED + ';color:#fff;font-weight:bold;font-size:16px;padding:12px 26px;border-radius:24px;text-decoration:none;">افتح «يومي» ←</a></div>'
+    + '</div></body></html>';
 }
 
 function briefDateAr_(d) {
